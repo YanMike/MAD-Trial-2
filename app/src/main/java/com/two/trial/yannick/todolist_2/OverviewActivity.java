@@ -50,9 +50,6 @@ public class OverviewActivity extends ActionBarActivity {
 
 package com.two.trial.yannick.todolist_2;
 
-        import java.util.ArrayList;
-        import java.util.List;
-
         import com.two.trial.yannick.todolist_2.model.DataItem;
 
         import android.os.Bundle;
@@ -60,9 +57,7 @@ package com.two.trial.yannick.todolist_2;
         import android.content.Intent;
         import android.util.Log;
         import android.view.Menu;
-        import android.view.MenuItem;
         import android.view.View;
-        import android.view.View.OnClickListener;
         import android.widget.Button;
         import android.widget.TextView;
         import android.widget.Toast;
@@ -94,7 +89,7 @@ public class OverviewActivity extends Activity {
         Log.i(logger, "called: onCreate()!");
 
         /* set the view -> choose the layout */
-        setContentView(R.layout.activity_overview);
+        setContentView(R.layout.layout_activity_overview);
 
         /* instantiate the ui elements */                                   // Bedienelemente auslesen, die verwendet werden sollen
         itemlistView = (TextView) findViewById(R.id.itemlistView);          // Konstante, um id innerhalb eines Layouts zu finden
@@ -165,7 +160,7 @@ public class OverviewActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_overview, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_overview, menu);
         return true;
     }
 

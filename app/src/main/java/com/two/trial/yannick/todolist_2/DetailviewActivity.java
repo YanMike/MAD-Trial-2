@@ -33,7 +33,7 @@ public class DetailviewActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i("Detailview", "onCreate");
-        setContentView(R.layout.activity_detailview);
+        setContentView(R.layout.layout_activity_detailview);
 
 		/* we read out the argument from the intent that contains the calltime and instantiate the latency attribute */
         latency = System.currentTimeMillis() - getIntent().getLongExtra("callTime", 0);
@@ -85,7 +85,7 @@ public class DetailviewActivity extends Activity {
         Log.i("Detailview","onCreateOptionsMenu");
 
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_detailview, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_detailview, menu);
 
 		/* we instantiate a create action once it is available */
 

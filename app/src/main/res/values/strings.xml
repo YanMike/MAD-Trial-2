@@ -10,7 +10,7 @@
     <!-- labels for fields and buttons -->
     <string name="addButton_text">Neues ToDo anlegen</string>
     <string name="todoName_placeholder">ToDo eingeben</string>
-    <string name="createButton_text">ToDo erstellen</string>
+    <string name="createButton_text">ToDo eintragen</string>
 
     <string name="action_settings">Settings</string>
 
