@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ToDoList-2</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_detailview">DetailviewActivity</string>
+    <string name="title_activity_overview">OverviewActivity</string>
+
+    <!-- labels for fields and buttons -->
+    <string name="addButton_text">Neues ToDo anlegen</string>
+    <string name="todoName_placeholder">ToDo eingeben</string>
+    <string name="createButton_text">ToDo erstellen</string>
+
+    <string name="action_settings">Settings</string>
+
+</resources>
