@@ -7,25 +7,97 @@ package com.two.trial.yannick.todolist_2;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 
 public class Login extends Activity {
+
+    private EditText loginEmail;
+    private EditText loginPassword;
+    boolean validMail;
+    boolean validPassword;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_login);
 
-        Button loginButton = (Button) findViewById(R.id.loginButton);
+        loginEmail                  = (EditText) findViewById(R.id.loginEmail);
+        loginPassword               = (EditText) findViewById(R.id.loginPassword);
+        final Button loginButton    = (Button) findViewById(R.id.loginButton);
+
+        loginButton.setEnabled(false);
+
+        loginPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (isValidEmail(loginEmail.getText().toString())) {
+                    validMail = true;
+                } else {
+                    validMail = false;
+                    loginEmail.setError("Please insert a valid email address");
+                }
+
+                if(loginPassword.getText().toString().length() != 6) {
+                    validPassword = false;
+                    loginPassword.setError("Please insert a valid password (length of 6, only digits are allowed");
+                } else {
+                    validPassword = true;
+                }
+
+                if(validMail == true && validPassword == true){
+                    loginButton.setEnabled(true);
+                }
+            }
+        });
+
+        loginPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                if(validMail == true && validPassword == true){
+                    loginButton.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+//        loginPassword.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                if(validMail == true && validPassword == true){
+//                    loginButton.setEnabled(true);
+//                }
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//
+//            }
+//        });
 
         loginButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 Log.i(FrameLayout.class.getName(), "onClick(): " + v);
@@ -55,5 +127,11 @@ public class Login extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public final static boolean isValidEmail(CharSequence target) {
+        if(target == null)
+            return false;
+        return Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 }

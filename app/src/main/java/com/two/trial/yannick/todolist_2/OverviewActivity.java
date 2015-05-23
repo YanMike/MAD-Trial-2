@@ -112,7 +112,7 @@ public class OverviewActivity extends Activity {
         });
 
         /* reset the listview removing the lorem ipsum using setText() */
-        itemlistView.setText("welcome");
+        itemlistView.setText("ToDo List");
     }
 
     @Override

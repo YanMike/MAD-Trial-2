@@ -1,7 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:clickable="true">
 
     <EditText
         android:id="@+id/loginEmail"
@@ -10,7 +11,7 @@
         android:hint="Email"
         android:imeOptions="actionNext"
         android:singleLine="true"
-        android:inputType="textEmailAddress" />
+        android:inputType="textEmailAddress" /> <!-- change keyboard layout ('@' & '.' are displayed) -->
 
     <EditText
         android:id="@+id/loginPassword"
@@ -19,7 +20,8 @@
         android:hint="Password"
         android:imeOptions="actionDone"
         android:singleLine="true"
-        android:inputType="textPassword" />
+        android:inputType="numberPassword"
+        android:maxLength="6"/>
 
     <Button
         android:id="@+id/loginButton"
