@@ -50,9 +50,10 @@ public class OverviewActivity extends ActionBarActivity {
 
 package com.two.trial.yannick.todolist_2;
 
-        import com.two.trial.yannick.todolist_2.model.DataItem;
+import com.two.trial.yannick.todolist_2.model.*;
+import com.two.trial.yannick.todolist_2.model.impl.*;
 
-        import android.app.ProgressDialog;
+import android.app.ProgressDialog;
         import android.os.AsyncTask;
         import android.os.Bundle;
         import android.app.Activity;
@@ -86,7 +87,6 @@ public class OverviewActivity extends Activity {
      */
 
     // the textual "list view"
-//    private TextView itemlistView;
     private View itemlistView;
 
     // the add item button
@@ -105,6 +105,8 @@ public class OverviewActivity extends Activity {
     // for ListView: declare a list of DataItem objects that will collect the
     // items created by the user
     private List<DataItem> dataItems = new ArrayList<DataItem>();
+
+    private IDataItemCRUDOperations modelOperations;
 
     // for ListView: declare an adapter that mediates between the list of items and the listview
     // Instanzvariable
@@ -126,8 +128,7 @@ public class OverviewActivity extends Activity {
         setContentView(R.layout.layout_activity_overview);
 
         /* instantiate the ui elements */                                   // Bedienelemente auslesen, die verwendet werden sollen
-//x        itemlistView = (TextView) findViewById(R.id.itemlistView);          // Konstante, um id innerhalb eines Layouts zu finden
-        itemlistView = findViewById(R.id.itemlistView);
+        itemlistView = findViewById(R.id.itemlistView);                     // Konstante, um id innerhalb eines Layouts zu finden
         addButton = (Button) findViewById(R.id.addButton);
 
         this.progressDialog = new ProgressDialog(this);
@@ -157,54 +158,51 @@ public class OverviewActivity extends Activity {
             ((ListView)itemlistView).setAdapter(adapter);
         }
 
+        // instantiate the model operations
+        modelOperations = new SQLiteDataItemCRUDOperationsImpl(this);       // Klasse muss übergeben werden als Context
+
         // read out all items and populate the view
         new AsyncTask<Void, Void, List<DataItem>>() {
 
             // Aufruf von onPreExecute erfolgt auf UI Thread
-            @Override
-            protected void onPreExecute() {
-                progressDialog.show();
-            }
+//            @Override
+//            protected void onPreExecute() {
+//                progressDialog.show();
+//            }
 
             @Override
             protected List<DataItem> doInBackground(Void... params) {
-                return readAllDataItems();
+                return modelOperations.readAllDataItems();
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(List<DataItem> result) {
                 adapter.addAll(result);
-                progressDialog.hide();
+//                progressDialog.hide();
             }
         }.execute();
-
-
-
-        /* reset the listview removing the lorem ipsum using setText() */
-//x        itemlistView.setText("ToDo List");
-
     }
 
-    private List<DataItem> readAllDataItems() {
-        try {
-            // to slow done UI Thread
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        // create a list of two items
-        List<DataItem> dataItems = new ArrayList<DataItem>();
-        dataItems.add(new DataItem("i1", System.currentTimeMillis()));
-        dataItems.add(new DataItem("i2", System.currentTimeMillis()));
-        dataItems.add(new DataItem("i3", System.currentTimeMillis()));
-        dataItems.add(new DataItem("i4", System.currentTimeMillis()));
-        dataItems.add(new DataItem("i5", System.currentTimeMillis()));
-
-        return dataItems;
-    }
+//    private List<DataItem> readAllDataItems() {
+//        try {
+//            // to slow done UI Thread
+//            Thread.sleep(1500);
+//        } catch (InterruptedException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//
+//        // create a list of two items
+//        List<DataItem> dataItems = new ArrayList<DataItem>();
+//        dataItems.add(new DataItem("i1", System.currentTimeMillis()));
+//        dataItems.add(new DataItem("i2", System.currentTimeMillis()));
+//        dataItems.add(new DataItem("i3", System.currentTimeMillis()));
+//        dataItems.add(new DataItem("i4", System.currentTimeMillis()));
+//        dataItems.add(new DataItem("i5", System.currentTimeMillis()));
+//
+//        return dataItems;
+//    }
 
     @Override
     protected void onResume() {
@@ -240,13 +238,6 @@ public class OverviewActivity extends Activity {
     /* implement onActivityResult(): read out result and update the listview using setText() */ // muss implementiert sein, um auf das Resultat reagieren zu können
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        Toast.makeText(this, "onActivityResult", Toast.LENGTH_SHORT).show();
-//
-//        if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
-//            DataItem item =(DataItem) data.getSerializableExtra("createdItem");
-//            itemlistView.setText(itemlistView.getText().toString() + "\n" + item.getName() + " -- " + item.getLatency());
-//        }
-
         // check whether we have a result object
         if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
             DataItem item =(DataItem) data.getSerializableExtra("createdItem");
@@ -258,31 +249,6 @@ public class OverviewActivity extends Activity {
 
     private void createAndShowNewItem(final DataItem newItem) {
 
-        // show the progress dialog
-//        progressDialog.show();
-//
-//        new Thread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                // call the createDataItemMethod, passing newItem
-//                final DataItem createdItem = createDataItem(newItem);
-//
-//                this.runOnUiThread(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        // update the listview with the return value of
-//                        // createDataItem
-//                        updateItemlistView(createdItem);
-//                        // close the progress dialog
-//                        progressDialog.hide();
-//                    }
-//                });
-//            }
-//
-//        }).start();
-
         new AsyncTask<DataItem, Void, DataItem>() {
 
             // Aufruf von onPreExecute erfolgt auf UI Thread
@@ -293,7 +259,7 @@ public class OverviewActivity extends Activity {
 
             @Override
             protected DataItem doInBackground(DataItem... params) {
-                return createDataItem(newItem);
+                return modelOperations.createDataItem(newItem);
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
@@ -308,21 +274,21 @@ public class OverviewActivity extends Activity {
 
     }
 
-    /*
-	 * some action that is performed and takes some time...
-	 */
-    private DataItem createDataItem(DataItem item) {
-        try {
-            Thread.sleep(1500);
-            // we add the item to the list
-            dataItems.add(item);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return item;
-    }
+//    /*
+//	 * some action that is performed and takes some time...
+//	 */
+//    private DataItem createDataItem(DataItem item) {
+//        try {
+//            Thread.sleep(1500);
+//            // we add the item to the list
+//            dataItems.add(item);
+//        } catch (InterruptedException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//
+//        return item;
+//    }
 
     /*
 	 * update the view
@@ -350,5 +316,7 @@ public class OverviewActivity extends Activity {
     }
 
     /* implement boolean onOptionsItemSelected(MenuItem item)  */
+
+
 
 }

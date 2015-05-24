@@ -6,7 +6,7 @@ import java.io.Serializable;
  *  this must be made serialisable to be passed together with an intent 
  */
 public class DataItem implements Serializable {
-	
+
 	/*
 	 * this holds the name of the item
 	 */
@@ -16,8 +16,9 @@ public class DataItem implements Serializable {
 	 * here we will store how long it had taken for the activity to start after being called
 	 */
 	private long latency;
+    private long id;
 
-	public DataItem(String name,long latency) {
+    public DataItem(String name,long latency) {
 		this.name = name;
 		this.latency = latency;
 	}
@@ -39,6 +40,16 @@ public class DataItem implements Serializable {
 	}
 
     /* DO NOT DO THIS !!! DataItem should not know how it is displayed - recording 13.May2015, 20min
-    */public String toString() {  return "item " + this.name; }
+    */public String toString() {  return "item " + this.name + " " + this.latency; }
     /**/
+
+    public DataItem() {}
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 }
