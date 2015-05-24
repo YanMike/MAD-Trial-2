@@ -3,7 +3,7 @@ package com.two.trial.yannick.todolist_2;
 /**
  * Created by yannick on 30.04.15.
  */
-    import com.two.trial.yannick.todolist_2.model.DataItem;
+    import com.two.trial.yannick.todolist_2.model.ToDoData;
 
     import android.app.Activity;
     import android.content.Intent;
@@ -22,8 +22,8 @@ public class DetailviewActivity extends Activity {
 	 * declare attributes for the three ui elements (and later for the createAction MenuItem) - Instanzattribute
 	 */
 
-    private TextView latencyLabel;
     private EditText itemnameText;
+    private EditText descriptionText;
     private Button createButton;
     private long latency;
 
@@ -39,9 +39,9 @@ public class DetailviewActivity extends Activity {
         latency = System.currentTimeMillis() - getIntent().getLongExtra("callTime", 0);
 
 		/* instantiate the three ui elements */
-        latencyLabel = (TextView) findViewById(R.id.latencyLabel);
-        itemnameText = (EditText) findViewById(R.id.itemnameText);
-        createButton = (Button) findViewById(R.id.createButton);
+        itemnameText    = (EditText) findViewById(R.id.itemnameText);
+        descriptionText = (EditText) findViewById(R.id.descriptionText);
+        createButton    = (Button) findViewById(R.id.createButton);
 
 		/* set the createButton as not enabled as long as no text has been input */
 
@@ -60,14 +60,12 @@ public class DetailviewActivity extends Activity {
         });
 
 		/* set the latency value as text on the latency textview */
-        latencyLabel.setText(String.valueOf(latency));
+//        latencyLabel.setText(String.valueOf(latency));
     }
 
     private void handleCreateAction() {
-        Toast.makeText(this, "handleCreateAction()", Toast.LENGTH_SHORT).show();
-
 		/* create an item, using the text from the edit text and the latency attribute */
-        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), latency);
+        ToDoData item = new ToDoData(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()));
 
 		/* create a return intent and pass the item (back to the activity) */
         Intent returnIntent = new Intent();

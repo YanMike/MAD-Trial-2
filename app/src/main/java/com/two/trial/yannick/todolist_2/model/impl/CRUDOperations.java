@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.two.trial.yannick.todolist_2.model.DataItem;
-import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
+import com.two.trial.yannick.todolist_2.model.IToDoDataCRUDOperations;
+import com.two.trial.yannick.todolist_2.model.ToDoData;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 /**
@@ -20,13 +19,12 @@ import android.util.Log;
  * @author Joern Kreutel
  *
  */
-public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations {
+public class CRUDOperations implements IToDoDataCRUDOperations {
 
     /**
      * the logger
      */
-    protected static final String logger = SQLiteDataItemCRUDOperationsImpl.class
-            .getName();
+    protected static final String logger = CRUDOperations.class.getName();
 
     /**
      * the db name
@@ -49,9 +47,12 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
      *
      * the _id column follows the convention required by the CursorAdapter usage
      */
-    public static final String COL_ID = "_id";
-    public static final String COL_NAME = "name";
-    public static final String COL_EXPIRED = "expired";
+    public static final String COL_ID       = "_id";
+    public static final String COL_NAME     = "name";
+    public static final String COL_EXPIRED  = "expired";
+    public static final String COL_DESCR    = "description";
+//    public static final String COL_DONE     = "done";
+//    public static final String COL_FAV      = "favourite";
 
     /**
      * the creation query (if there is trouble try to change expired from integer to text...)
@@ -59,6 +60,8 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     public static final String TABLE_CREATION_QUERY = "CREATE TABLE " + TABNAME
             + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"
             + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
+//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
+//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT\n" + COL_DONE + " BOOLEAN,\n" + COL_FAV + " BOOLEAN);";
 
     /**
      * the -> where clause <- for item deletion
@@ -78,14 +81,14 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     /**
      * construct an instance and prepare the db
      */
-    public SQLiteDataItemCRUDOperationsImpl(Context context) {
+    public CRUDOperations(Context context) {
 
         // prepare the db
         this.prepareSQLiteDatabase(context);
     }
 
     @Override
-    public DataItem createDataItem(DataItem item) {
+    public ToDoData createDataItem(ToDoData item) {
         Log.i(logger, "createDataItem(): " + item);
 
 		/*
@@ -94,7 +97,10 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 		 */
         ContentValues values = new ContentValues();
         values.put(COL_NAME, item.getName());
-        values.put(COL_EXPIRED, item.getLatency());
+        values.put(COL_EXPIRED, item.getEpired());
+//        values.put(COL_DESCR, item.getDescription());
+//        values.put(COL_DONE, item.isDone());
+//        values.put(COL_FAV, item.isFavourite());
 
 		/* insert the content values and take the id as return value */
         long id = db.insert(TABNAME, null,values);
@@ -107,13 +113,13 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     }
 
     @Override
-    public List<DataItem> readAllDataItems() {
+    public List<ToDoData> readAllDataItems() {
         Log.i(logger, "readAllDataItems()");
 		/*
 		 * declare a list of items that will keep the values read out from the
 		 * db
 		 */
-        List<DataItem> items = new ArrayList<DataItem>();
+        List<ToDoData> items = new ArrayList<ToDoData>();
 
 		/*
 		 * declare the columns to be read out (id, name and expired) as a String
@@ -126,6 +132,7 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
             // expired = representation for latency in earlier versions of dataitem
             // ASC = aufsteigende Reihenfolge
         Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
+//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
 
 		/* use the cursor, moving to the first dataset */
             // moveToFirst schlägt fehlt, wenn kein Inhalt da, andernfalls zeigt Cursor auf ersten Datensatz der auszugebenden Tabelle
@@ -134,10 +141,13 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 			/* create an item from the current cursor position */
 			/* move the cursor to the next item */
             do {
-                DataItem currentItem = new DataItem();
+                ToDoData currentItem = new ToDoData();
                 // "liefere mir vom aktuellen Datensatz wo du gerade drauf bist, den Wert des Namensspalte"; erwartet eigtl index, wenn man diesen nicht kennt -> .getColumnIndex()
                 currentItem.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
-                currentItem.setLatency(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
+                currentItem.setEpired(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
+//                currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
+//                currentItem.setFavourite(cursor.)
+//                currentItem.setDone(cursor.getColumnIndex(COL_DONE));
                 currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
                 items.add(currentItem);
             } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
@@ -204,7 +214,7 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
      * @param item
      * @return
      */
-    private ContentValues createContentValues(DataItem item) {
+    private ContentValues createContentValues(ToDoData item) {
 
 		/* create a content values object */
 
@@ -220,7 +230,7 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
      * @param c
      * @return
      */
-    public DataItem createItemFromCursor(Cursor c) {
+    public ToDoData createItemFromCursor(Cursor c) {
 		/* create an instance of DataItem */
 
 		/* then populate the item with the results from the cursor */
@@ -262,6 +272,13 @@ public class SQLiteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 		/* close the db to avoid trouble */
         this.db.close();
         Log.i(logger, "db has been closed");
+    }
+
+    /**
+     * delete the database
+     */
+    public void deleteSQLiteDatabase(Context context) {
+        context.deleteDatabase(DBNAME);
     }
 
 }

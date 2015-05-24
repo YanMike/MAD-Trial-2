@@ -1,78 +1,26 @@
-/*
-package com.two.trial.yannick.todolist_2;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-
-
-public class OverviewActivity extends ActionBarActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_overview);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_overview, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-}
-*/
-
-
 package com.two.trial.yannick.todolist_2;
 
 import com.two.trial.yannick.todolist_2.model.*;
 import com.two.trial.yannick.todolist_2.model.impl.*;
 
 import android.app.ProgressDialog;
-        import android.os.AsyncTask;
-        import android.os.Bundle;
-        import android.app.Activity;
-        import android.content.Intent;
-        import android.util.Log;
-        import android.view.LayoutInflater;
-        import android.view.Menu;
-        import android.view.View;
-        import android.view.ViewGroup;
-        import android.widget.ArrayAdapter;
-        import android.widget.Button;
-        import android.widget.CheckBox;
-        import android.widget.CompoundButton;
-        import android.widget.ListView;
-        import android.widget.TextView;
-        import android.widget.Toast;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Intent;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-        import java.util.ArrayList;
-        import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OverviewActivity extends Activity {
 
@@ -85,10 +33,8 @@ public class OverviewActivity extends Activity {
     /*
      * declare instance attributes for the ui elements          // Bedienelemente erstellen, die verwendet werden sollen
      */
-
     // the textual "list view"
     private View itemlistView;
-
     // the add item button
     private Button addButton;
 
@@ -102,15 +48,14 @@ public class OverviewActivity extends Activity {
      */
     private ProgressDialog progressDialog;
 
-    // for ListView: declare a list of DataItem objects that will collect the
-    // items created by the user
-    private List<DataItem> dataItems = new ArrayList<DataItem>();
+    // for ListView: declare a list of DataItem objects that will collect the items created by the user
+    private List<ToDoData> dataItems = new ArrayList<ToDoData>();
 
-    private IDataItemCRUDOperations modelOperations;
+    private IToDoDataCRUDOperations modelOperations;
 
     // for ListView: declare an adapter that mediates between the list of items and the listview
     // Instanzvariable
-    private ArrayAdapter<DataItem> adapter;
+    private ArrayAdapter<ToDoData> adapter;
 
 	/*
 	 * an attribute that holds the list of items that are created by this app (optionally)
@@ -129,7 +74,7 @@ public class OverviewActivity extends Activity {
 
         /* instantiate the ui elements */                                   // Bedienelemente auslesen, die verwendet werden sollen
         itemlistView = findViewById(R.id.itemlistView);                     // Konstante, um id innerhalb eines Layouts zu finden
-        addButton = (Button) findViewById(R.id.addButton);
+        addButton    = (Button) findViewById(R.id.addButton);
 
         this.progressDialog = new ProgressDialog(this);
 
@@ -141,84 +86,101 @@ public class OverviewActivity extends Activity {
          * show the alternative solution with the android:onClick attribute
          */
 
+        // instantiate the model operations
+        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
+
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(OverviewActivity.this, "onClick!", Toast.LENGTH_LONG).show();        // zu Testzwecken; alert, der alleine verschwindet
                 handleAddAction();
+
+                /**
+                 * only for development - to delete database to add new columns or make any other basical changes
+                 */
+//                try {
+//                    modelOperations.deleteSQLiteDatabase(OverviewActivity.this);
+//                    Log.i(logger, "database deleted");
+//                } catch(Exception e) {
+//                    Log.i(logger, "database deletion failed: " + e);
+//                }
+                /* *** */
             }
         });
 
-        adapter = new ArrayAdapter<DataItem>(this, R.layout.layout_listview_checkbox, R.id.itemName);
+        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName);
+//        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, dataItems) {
+//            @Override
+//            public View getView(int position, View convertView, ViewGroup parent) {
+//                if(itemlistView == null) {
+//                    itemlistView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
+//                }
+//
+//                TextView itemName  = (TextView) itemlistView.findViewById(R.id.itemName);
+//                TextView itemDescr = (TextView) itemlistView.findViewById(R.id.itemDescr);
+//
+//                final ToDoData item = dataItems.get(position);
+//
+//                modelOperations.readAllDataItems();
+//
+//                return convertView;
+//            }
+//        };
         adapter.setNotifyOnChange(true);
+        ((ListView)itemlistView).setAdapter(adapter);
 
-        if (itemlistView instanceof TextView) {
-            ((TextView) itemlistView).setText("");
-        } else {
-            ((ListView)itemlistView).setAdapter(adapter);
-        }
+        ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ToDoData selectedItem = adapter.getItem(position);
+                deleteDataItemAndUpdateListView(selectedItem);
+                // TODO REAL TODO : UMSETZEN; NICHT LÖSCHEN, SONDERN ÜBERGANG IN DETAILVIEW
+            }
+        });
 
-        // instantiate the model operations
-        modelOperations = new SQLiteDataItemCRUDOperationsImpl(this);       // Klasse muss übergeben werden als Context
+
+
 
         // read out all items and populate the view
-        new AsyncTask<Void, Void, List<DataItem>>() {
-
-            // Aufruf von onPreExecute erfolgt auf UI Thread
-//            @Override
-//            protected void onPreExecute() {
-//                progressDialog.show();
-//            }
+        new AsyncTask<Void, Void, List<ToDoData>>() {
 
             @Override
-            protected List<DataItem> doInBackground(Void... params) {
+            protected List<ToDoData> doInBackground(Void... params) {
                 return modelOperations.readAllDataItems();
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
-            protected void onPostExecute(List<DataItem> result) {
+            protected void onPostExecute(List<ToDoData> result) {
                 adapter.addAll(result);
-//                progressDialog.hide();
             }
         }.execute();
     }
 
-//    private List<DataItem> readAllDataItems() {
-//        try {
-//            // to slow done UI Thread
-//            Thread.sleep(1500);
-//        } catch (InterruptedException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//
-//        // create a list of two items
-//        List<DataItem> dataItems = new ArrayList<DataItem>();
-//        dataItems.add(new DataItem("i1", System.currentTimeMillis()));
-//        dataItems.add(new DataItem("i2", System.currentTimeMillis()));
-//        dataItems.add(new DataItem("i3", System.currentTimeMillis()));
-//        dataItems.add(new DataItem("i4", System.currentTimeMillis()));
-//        dataItems.add(new DataItem("i5", System.currentTimeMillis()));
-//
-//        return dataItems;
-//    }
+    private void deleteDataItemAndUpdateListView(final ToDoData selectedItem) {
+        new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                // wenn löschen erfolgreich -> Methode return true
+                return modelOperations.deleteDataItem(selectedItem.getId());
+            }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(logger, "onResume()!");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(logger, "onDestroy()!");
+            @Override
+            protected void onPostExecute(Boolean result) {
+                if(result) {
+                    // Um Ansicht zu aktualisieren
+                    adapter.remove(selectedItem);
+                } else {
+                    // falls löschen fehl schlägt
+                    Toast.makeText(OverviewActivity.this, "DataItem could not be deleted!", Toast.LENGTH_SHORT).show();
+                    Log.i(logger, "Deletion failed!");
+                }
+            }
+        }.execute();
     }
 
     /*
-             * deal with adding a new element to the list
-             */
+     * deal with adding a new element to the list
+     */
     private void handleAddAction() {
         /* first simply use a toast to show feedback of the onclick action */
         Toast.makeText(this, "handleAddAction()", Toast.LENGTH_LONG).show();
@@ -240,16 +202,16 @@ public class OverviewActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // check whether we have a result object
         if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            DataItem item =(DataItem) data.getSerializableExtra("createdItem");
+            ToDoData item =(ToDoData) data.getSerializableExtra("createdItem");
             createAndShowNewItem(item);
         } else {
             Log.i(logger, "no newItem contained in result");
         }
     }
 
-    private void createAndShowNewItem(final DataItem newItem) {
+    private void createAndShowNewItem(final ToDoData newItem) {
 
-        new AsyncTask<DataItem, Void, DataItem>() {
+        new AsyncTask<ToDoData, Void, ToDoData>() {
 
             // Aufruf von onPreExecute erfolgt auf UI Thread
             @Override
@@ -258,54 +220,42 @@ public class OverviewActivity extends Activity {
             }
 
             @Override
-            protected DataItem doInBackground(DataItem... params) {
+            protected ToDoData doInBackground(ToDoData... params) {
                 return modelOperations.createDataItem(newItem);
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
-            protected void onPostExecute(DataItem result) {
-//                adapter.addAll(result);
-//                progressDialog.hide();
-                updateItemlistView(result);
+            protected void onPostExecute(ToDoData result) {
+//                adapter.addAll(result);       // TODO REAL TODO: ASK: was ist der Unterschied hier zwischen addAll() oder Aufruf der Fkt UpdateItemListView
+                updateItemListView(result);
                 progressDialog.hide();
             }
         }.execute();
-
     }
-
-//    /*
-//	 * some action that is performed and takes some time...
-//	 */
-//    private DataItem createDataItem(DataItem item) {
-//        try {
-//            Thread.sleep(1500);
-//            // we add the item to the list
-//            dataItems.add(item);
-//        } catch (InterruptedException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//
-//        return item;
-//    }
 
     /*
 	 * update the view
 	 */
-    private void updateItemlistView(DataItem item) {
-
-        if (this.itemlistView instanceof TextView) {
-            ((TextView) itemlistView).setText(((TextView) itemlistView).getText() + "\n" + item.getName() + " -- "
-                    + item.getLatency());
-            progressDialog.hide();
-        }
-		/* for ListView: here we deal with the case that we have a listview */
-        else {
-			/* add the item to the adapter */
-            adapter.add(item);
-        }
+    private void updateItemListView(ToDoData item) {
+        /* add the item to the adapter */
+        adapter.add(item);
     }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(logger, "onResume()!");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(logger, "onDestroy()!");
+    }
+
 
 
     @Override
@@ -316,7 +266,4 @@ public class OverviewActivity extends Activity {
     }
 
     /* implement boolean onOptionsItemSelected(MenuItem item)  */
-
-
-
 }

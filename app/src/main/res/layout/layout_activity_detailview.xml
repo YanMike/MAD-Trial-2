@@ -3,13 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".DetailviewActivity" >
-
-    <TextView
-        android:id="@+id/latencyLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="lorem ipsum" />
+    tools:context=".DetailviewActivity"
+    android:weightSum="1">
 
     <EditText
         android:id="@+id/itemnameText"
@@ -18,6 +13,14 @@
         android:hint="@string/todoName_placeholder"
         android:imeOptions="actionDone"
         android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/descriptionText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:hint="Beschreibung" />
 
     <Button
         android:id="@+id/createButton"
