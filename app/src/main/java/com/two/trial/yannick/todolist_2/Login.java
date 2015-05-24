@@ -44,7 +44,6 @@ public class Login extends Activity {
                 if (isValidEmail(loginEmail.getText().toString())) {
                     validMail = true;
                 } else {
-                    validMail = false;
                     loginEmail.setError("Please insert a valid email address");
                 }
 

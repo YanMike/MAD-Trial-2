@@ -38,4 +38,7 @@ public class DataItem implements Serializable {
 		this.latency = latency;
 	}
 
+    /* DO NOT DO THIS !!! DataItem should not know how it is displayed - recording 13.May2015, 20min
+    */public String toString() {  return "item " + this.name; }
+    /**/
 }
