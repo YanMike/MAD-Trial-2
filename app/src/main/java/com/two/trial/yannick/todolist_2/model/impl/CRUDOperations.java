@@ -78,6 +78,8 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
      */
     private SQLiteDatabase db;
 
+
+
     /**
      * construct an instance and prepare the db
      */
