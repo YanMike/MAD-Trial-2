@@ -69,7 +69,7 @@ public class DetailviewActivity extends Activity {
 
 		/* create a return intent and pass the item (back to the activity) */
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("createdItem", item);
+         returnIntent.putExtra("createdItem", item);
 
 		/* set the result passing RESULT_OK from Activity */
         setResult(Activity.RESULT_OK, returnIntent);

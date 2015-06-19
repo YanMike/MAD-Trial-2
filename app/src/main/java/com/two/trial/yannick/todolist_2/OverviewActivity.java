@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -107,7 +108,40 @@ public class OverviewActivity extends Activity {
             }
         });
 
-        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName);
+        //Stand ohne getView
+        // adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName);
+
+        //Bearbeitung 27.05. während Vorlesung
+        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName) {
+            @Override
+            public View getView(int position, View existingView, ViewGroup parent) {
+                // existingView  = view die gerade an position ist und übergeben wird
+
+                View listItemView;
+
+                if(existingView != null) {
+                    listItemView = existingView;
+                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
+                } else {
+                    // LayoutInflater = "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzubloßen, mit Layout das hier erstellt wird
+
+                    //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
+                    listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
+                    Log.i(logger, "creating new view for position " + position + ": " + listItemView);
+                }
+
+                TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
+                CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
+                ToDoData listItem = getItem(position);
+
+                itemNameText.setText(listItem.getName() + " - " + listItem.getDescription());
+                //itemChecked.setChecked(..);
+
+                return listItemView;
+                // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
+            }
+        };
+        // VERGLEICH UND FEHLER FINDEN !! BERICHTEN IN NÄCHSTER VORLESUNG !!!
 //        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, dataItems) {
 //            @Override
 //            public View getView(int position, View convertView, ViewGroup parent) {
@@ -128,17 +162,26 @@ public class OverviewActivity extends Activity {
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
 
+        //beim Prof sieht das so aus:
+
         ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // test
+                /*
+                TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_textview_simple, null);
+                textView.setText(String.valueOf(System.currentTimeMillis()));
+
+                ((ViewGroup)view).addView(textView);
+                */
+            // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
+                /* *** */
+
                 ToDoData selectedItem = adapter.getItem(position);
                 deleteDataItemAndUpdateListView(selectedItem);
                 // TODO REAL TODO : UMSETZEN; NICHT LÖSCHEN, SONDERN ÜBERGANG IN DETAILVIEW
             }
         });
-
-
-
 
         // read out all items and populate the view
         new AsyncTask<Void, Void, List<ToDoData>>() {
@@ -160,7 +203,7 @@ public class OverviewActivity extends Activity {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
-                // wenn löschen erfolgreich -> Methode return true
+                // wenn löschen erfolgreich -> Methode returns true
                 return modelOperations.deleteDataItem(selectedItem.getId());
             }
 

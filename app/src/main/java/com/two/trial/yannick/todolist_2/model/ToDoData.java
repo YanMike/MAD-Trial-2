@@ -75,10 +75,10 @@ public class ToDoData implements Serializable {
         this.favourite = favourite;
     }
 
-    /* DO NOT DO THIS !!! DataItem should not know how it is displayed - recording 13.May2015, 20min
-*/  public String toString() {
-        return "item " + this.name + " " + this.epired + " " + this.description;
+    /* DO NOT DO THIS !!! DataItem should not know how it is displayed - recording 13.May2015, 20min */
+//  public String toString() {
+//        return "item " + this.name + " " + this.epired + " " + this.description;
 //        return "item " + this.name + " " + this.epired + " " + this.favourite + " " + this.done + " " + this.description;
-    }
+//    }
     /**/
 }
