@@ -4,11 +4,11 @@ import android.content.Context;
 
 import java.util.List;
 
-public interface IToDoDataCRUDOperations {
+public interface IDataItemCRUDOperations {
 
-    public ToDoData createDataItem(ToDoData item);
+    public DataItem createDataItem(DataItem item);
 
-    public List<ToDoData> readAllDataItems();
+    public List<DataItem> readAllDataItems();
 
     boolean deleteDataItem(long dataItemId);
 

@@ -1,9 +1,5 @@
 package com.two.trial.yannick.todolist_2;
 
-/**
- * Created by yannick on 30.04.15.
- */
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,13 +15,15 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
+
 
 public class Login extends Activity {
 
     private EditText loginEmail;
     private EditText loginPassword;
-    boolean validMail;
-    boolean validPassword;
+            boolean validMail;
+            boolean validPassword;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

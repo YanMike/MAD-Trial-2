@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,13 +51,13 @@ public class OverviewActivity extends Activity {
     private ProgressDialog progressDialog;
 
     // for ListView: declare a list of DataItem objects that will collect the items created by the user
-    private List<ToDoData> dataItems = new ArrayList<ToDoData>();
+    private List<DataItem> dataItems = new ArrayList<DataItem>();
 
-    private IToDoDataCRUDOperations modelOperations;
+    private IDataItemCRUDOperations modelOperations;
 
     // for ListView: declare an adapter that mediates between the list of items and the listview
     // Instanzvariable
-    private ArrayAdapter<ToDoData> adapter;
+    private ArrayAdapter<DataItem> adapter;
 
 	/*
 	 * an attribute that holds the list of items that are created by this app (optionally)
@@ -80,7 +81,7 @@ public class OverviewActivity extends Activity {
         this.progressDialog = new ProgressDialog(this);
 
         /*
-         * set an onClick listener on the addButton
+         * set an  onClick listener on the addButton
          *
          * create a handleAddAction() method on this class and call it from the listener
          *
@@ -88,7 +89,8 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
+        modelOperations = new RemoteDataItemCRUDOperationsImpl();
+        //modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,22 +99,22 @@ public class OverviewActivity extends Activity {
 
                 /**
                  * only for development - to delete database to add new columns or make any other basical changes
-                 */
-//                try {
-//                    modelOperations.deleteSQLiteDatabase(OverviewActivity.this);
-//                    Log.i(logger, "database deleted");
-//                } catch(Exception e) {
-//                    Log.i(logger, "database deletion failed: " + e);
-//                }
+                */
+                /*
+                try {
+                    modelOperations.deleteSQLiteDatabase(OverviewActivity.this);
+                    Log.i(logger, "database deleted");
+                } catch(Exception e) {
+                    Log.i(logger, "database deletion failed: " + e);
+                    e.printStackTrace();
+                }
+                */
                 /* *** */
             }
         });
 
-        //Stand ohne getView
-        // adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName);
-
         //Bearbeitung 27.05. während Vorlesung
-        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, R.id.itemName) {
+        adapter = new ArrayAdapter<DataItem>(this, R.layout.layout_listview_checkbox, R.id.itemName) {
             @Override
             public View getView(int position, View existingView, ViewGroup parent) {
                 // existingView  = view die gerade an position ist und übergeben wird
@@ -123,7 +125,7 @@ public class OverviewActivity extends Activity {
                     listItemView = existingView;
                     Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
-                    // LayoutInflater = "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzubloßen, mit Layout das hier erstellt wird
+                    // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
 
                     //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
@@ -132,41 +134,35 @@ public class OverviewActivity extends Activity {
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
-                ToDoData listItem = getItem(position);
+                final DataItem listItem = getItem(position);
 
                 itemNameText.setText(listItem.getName() + " - " + listItem.getDescription());
-                //itemChecked.setChecked(..);
+                itemChecked.setChecked(listItem.isDone());
+
+                itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        listItem.setDone(isChecked);
+                        deleteDataItemAndUpdateListView(listItem);
+                        // TODO 1: noch nicht in DB gespeichert, wenn erledigt
+                        // TODO 2: erledigte Elemente ausblenden (? siehe Spezifikation)
+                    }
+                });
 
                 return listItemView;
                 // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
             }
         };
-        // VERGLEICH UND FEHLER FINDEN !! BERICHTEN IN NÄCHSTER VORLESUNG !!!
-//        adapter = new ArrayAdapter<ToDoData>(this, R.layout.layout_listview_checkbox, dataItems) {
-//            @Override
-//            public View getView(int position, View convertView, ViewGroup parent) {
-//                if(itemlistView == null) {
-//                    itemlistView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
-//                }
-//
-//                TextView itemName  = (TextView) itemlistView.findViewById(R.id.itemName);
-//                TextView itemDescr = (TextView) itemlistView.findViewById(R.id.itemDescr);
-//
-//                final ToDoData item = dataItems.get(position);
-//
-//                modelOperations.readAllDataItems();
-//
-//                return convertView;
-//            }
-//        };
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
 
-        //beim Prof sieht das so aus:
 
         ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                // TODO REAL TODO : UMSETZEN -  ÜBERGANG IN DETAILVIEW
+
                 // test
                 /*
                 TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_textview_simple, null);
@@ -174,32 +170,32 @@ public class OverviewActivity extends Activity {
 
                 ((ViewGroup)view).addView(textView);
                 */
-            // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
+                // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
                 /* *** */
 
-                ToDoData selectedItem = adapter.getItem(position);
-                deleteDataItemAndUpdateListView(selectedItem);
-                // TODO REAL TODO : UMSETZEN; NICHT LÖSCHEN, SONDERN ÜBERGANG IN DETAILVIEW
+
             }
         });
 
+
+
         // read out all items and populate the view
-        new AsyncTask<Void, Void, List<ToDoData>>() {
+        new AsyncTask<Void, Void, List<DataItem>>() {
 
             @Override
-            protected List<ToDoData> doInBackground(Void... params) {
+            protected List<DataItem> doInBackground(Void... params) {
                 return modelOperations.readAllDataItems();
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
-            protected void onPostExecute(List<ToDoData> result) {
+            protected void onPostExecute(List<DataItem> result) {
                 adapter.addAll(result);
             }
         }.execute();
     }
 
-    private void deleteDataItemAndUpdateListView(final ToDoData selectedItem) {
+    private void deleteDataItemAndUpdateListView(final DataItem selectedItem) {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
@@ -245,42 +241,42 @@ public class OverviewActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // check whether we have a result object
         if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            ToDoData item =(ToDoData) data.getSerializableExtra("createdItem");
+            DataItem item =(DataItem) data.getSerializableExtra("createdItem");
             createAndShowNewItem(item);
         } else {
             Log.i(logger, "no newItem contained in result");
         }
     }
 
-    private void createAndShowNewItem(final ToDoData newItem) {
+    private void createAndShowNewItem(final DataItem newItem) {
 
-        new AsyncTask<ToDoData, Void, ToDoData>() {
-
+        new AsyncTask<DataItem, Void, DataItem>() {
             // Aufruf von onPreExecute erfolgt auf UI Thread
-            @Override
+            /*@Override
             protected void onPreExecute() {
                 progressDialog.show();
-            }
+            };*/
 
             @Override
-            protected ToDoData doInBackground(ToDoData... params) {
-                return modelOperations.createDataItem(newItem);
+            protected DataItem doInBackground(DataItem... params) {
+                return modelOperations.createDataItem(params[0]);
             }
 
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
-            protected void onPostExecute(ToDoData result) {
-//                adapter.addAll(result);       // TODO REAL TODO: ASK: was ist der Unterschied hier zwischen addAll() oder Aufruf der Fkt UpdateItemListView
+            protected void onPostExecute(DataItem result) {
+                //adapter.addAll(result);
                 updateItemListView(result);
-                progressDialog.hide();
-            }
-        }.execute();
+                //progressDialog.hide();
+            };
+
+        }.execute(newItem);
     }
 
     /*
 	 * update the view
 	 */
-    private void updateItemListView(ToDoData item) {
+    private void updateItemListView(DataItem item) {
         /* add the item to the adapter */
         adapter.add(item);
     }

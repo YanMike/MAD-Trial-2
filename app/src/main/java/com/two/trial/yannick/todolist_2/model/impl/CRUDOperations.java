@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.two.trial.yannick.todolist_2.model.IToDoDataCRUDOperations;
-import com.two.trial.yannick.todolist_2.model.ToDoData;
+import com.two.trial.yannick.todolist_2.model.DataItem;
+import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -19,7 +19,7 @@ import android.util.Log;
  * @author Joern Kreutel
  *
  */
-public class CRUDOperations implements IToDoDataCRUDOperations {
+public class CRUDOperations implements IDataItemCRUDOperations {
 
     /**
      * the logger
@@ -29,7 +29,7 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
     /**
      * the db name
      */
-    public static final String DBNAME = "dataItems.db";
+    public static final String DBNAME = "dataItemsDescr.db";
 
     /**
      * the initial version of the db based on which we decide whether to create
@@ -40,7 +40,7 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
     /**
      * the table name
      */
-    public static final String TABNAME = "dataitems";
+    public static final String TABNAME = "dataitemsdescr";
 
     /**
      * the column names
@@ -59,8 +59,8 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
      */
     public static final String TABLE_CREATION_QUERY = "CREATE TABLE " + TABNAME
             + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
-//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
+//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
+            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT\n" + COL_DONE + " BOOLEAN,\n" + COL_FAV + " BOOLEAN);";
 
     /**
@@ -88,7 +88,7 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
     }
 
     @Override
-    public ToDoData createDataItem(ToDoData item) {
+    public DataItem createDataItem(DataItem item) {
         Log.i(logger, "createDataItem(): " + item);
 
 		/*
@@ -97,8 +97,8 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
 		 */
         ContentValues values = new ContentValues();
         values.put(COL_NAME, item.getName());
-        values.put(COL_EXPIRED, item.getEpired());
-//        values.put(COL_DESCR, item.getDescription());
+        values.put(COL_EXPIRED, item.getExpiry());
+        values.put(COL_DESCR, item.getDescription());
 //        values.put(COL_DONE, item.isDone());
 //        values.put(COL_FAV, item.isFavourite());
 
@@ -113,13 +113,13 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
     }
 
     @Override
-    public List<ToDoData> readAllDataItems() {
+    public List<DataItem> readAllDataItems() {
         Log.i(logger, "readAllDataItems()");
 		/*
 		 * declare a list of items that will keep the values read out from the
 		 * db
 		 */
-        List<ToDoData> items = new ArrayList<ToDoData>();
+        List<DataItem> items = new ArrayList<DataItem>();
 
 		/*
 		 * declare the columns to be read out (id, name and expired) as a String
@@ -131,8 +131,8 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
 		/* query the db taking a cursor as return value */
             // expired = representation for latency in earlier versions of dataitem
             // ASC = aufsteigende Reihenfolge
-        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
-//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
+//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
+        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
 
 		/* use the cursor, moving to the first dataset */
             // moveToFirst schlägt fehlt, wenn kein Inhalt da, andernfalls zeigt Cursor auf ersten Datensatz der auszugebenden Tabelle
@@ -141,11 +141,11 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
 			/* create an item from the current cursor position */
 			/* move the cursor to the next item */
             do {
-                ToDoData currentItem = new ToDoData();
-                // "liefere mir vom aktuellen Datensatz wo du gerade drauf bist, den Wert des Namensspalte"; erwartet eigtl index, wenn man diesen nicht kennt -> .getColumnIndex()
+                DataItem currentItem = new DataItem();
+                // "liefere mir vom aktuellen Datensatz wo du gerade drauf bist, den Wert der Namensspalte"; erwartet eigtl index, wenn man diesen nicht kennt -> .getColumnIndex()
                 currentItem.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
-                currentItem.setEpired(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
-//                currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
+                currentItem.setExpiry(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
+                currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
 //                currentItem.setFavourite(cursor.)
 //                currentItem.setDone(cursor.getColumnIndex(COL_DONE));
                 currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
@@ -214,7 +214,7 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
      * @param item
      * @return
      */
-    private ContentValues createContentValues(ToDoData item) {
+    private ContentValues createContentValues(DataItem item) {
 
 		/* create a content values object */
 
@@ -230,7 +230,7 @@ public class CRUDOperations implements IToDoDataCRUDOperations {
      * @param c
      * @return
      */
-    public ToDoData createItemFromCursor(Cursor c) {
+    public DataItem createItemFromCursor(Cursor c) {
 		/* create an instance of DataItem */
 
 		/* then populate the item with the results from the cursor */

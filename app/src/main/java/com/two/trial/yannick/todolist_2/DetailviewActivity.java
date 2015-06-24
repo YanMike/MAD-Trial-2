@@ -3,7 +3,7 @@ package com.two.trial.yannick.todolist_2;
 /**
  * Created by yannick on 30.04.15.
  */
-    import com.two.trial.yannick.todolist_2.model.ToDoData;
+    import com.two.trial.yannick.todolist_2.model.DataItem;
 
     import android.app.Activity;
     import android.content.Intent;
@@ -13,8 +13,6 @@ package com.two.trial.yannick.todolist_2;
     import android.view.View;
     import android.widget.Button;
     import android.widget.EditText;
-    import android.widget.TextView;
-    import android.widget.Toast;
 
 public class DetailviewActivity extends Activity {
 
@@ -65,7 +63,7 @@ public class DetailviewActivity extends Activity {
 
     private void handleCreateAction() {
 		/* create an item, using the text from the edit text and the latency attribute */
-        ToDoData item = new ToDoData(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()));
+        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()));
 
 		/* create a return intent and pass the item (back to the activity) */
         Intent returnIntent = new Intent();
