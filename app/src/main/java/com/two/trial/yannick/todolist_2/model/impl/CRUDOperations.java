@@ -51,7 +51,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
     public static final String COL_NAME     = "name";
     public static final String COL_EXPIRED  = "expired";
     public static final String COL_DESCR    = "description";
-//    public static final String COL_DONE     = "done";
+    public static final String COL_DONE     = "done";
 //    public static final String COL_FAV      = "favourite";
 
     /**
@@ -61,6 +61,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
             + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
             + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
+//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT,\n" + COL_DONE + " Text);";
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT\n" + COL_DONE + " BOOLEAN,\n" + COL_FAV + " BOOLEAN);";
 
     /**
@@ -133,6 +134,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
             // ASC = aufsteigende Reihenfolge
 //        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
         Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
+//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE}, null, null, null, null, COL_ID + " ASC");
 
 		/* use the cursor, moving to the first dataset */
             // moveToFirst schlägt fehlt, wenn kein Inhalt da, andernfalls zeigt Cursor auf ersten Datensatz der auszugebenden Tabelle
@@ -147,7 +149,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
                 currentItem.setExpiry(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
                 currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
 //                currentItem.setFavourite(cursor.)
-//                currentItem.setDone(cursor.getColumnIndex(COL_DONE));
+//                currentItem.setDone(cursor.getInt(cursor.getColumnIndex(COL_DONE)) == VALUE_EXPIRED);
                 currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
                 items.add(currentItem);
             } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
