@@ -2,17 +2,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
-        android:id="@+id/menu_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never"
-        android:title="@string/menu_settings"/>
-
-    <!-- 
-    <item
         android:id="@+id/optionAdd"
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"
-        android:showAsAction="always"
-        android:title="Neu"/> -->
+        app:showAsAction="always"
+        android:title="Neues Element"/>
+
+    <item
+        android:id="@+id/optionDelete"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_input_add"
+        app:showAsAction="ifRoom"
+        android:title="Löschen"/>
+
+    <item
+        android:id="@+id/optionSortByDone"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_input_add"
+        app:showAsAction="ifRoom"
+        android:title="Nach Erledigt sortieren"/>
+
+    <item
+        android:id="@+id/optionSortByDate"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_input_add"
+        app:showAsAction="ifRoom"
+        android:title="Nach Datum sortieren"/>
 
 </menu>

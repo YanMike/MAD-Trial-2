@@ -10,6 +10,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.SQLClientInfoException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,8 +92,8 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-        modelOperations = new RemoteDataItemCRUDOperationsImpl();
-        //modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
+        //modelOperations = new RemoteDataItemCRUDOperationsImpl();
+        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,26 +129,30 @@ public class OverviewActivity extends Activity {
                     Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
-
-                    //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
                     Log.i(logger, "creating new view for position " + position + ": " + listItemView);
+
+                    //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
+
                 }
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
+
+                itemChecked.setOnCheckedChangeListener(null); // harte Methode, um beim Wiederverwenden der Ansicht nicht den alten Listener zu überschreiben
+
                 final DataItem listItem = getItem(position);
 
-                itemNameText.setText(listItem.getName() + " - " + listItem.getDescription());
+                itemNameText.setText(listItem.getName()); // + " - " + listItem.getDescription());
                 itemChecked.setChecked(listItem.isDone());
 
                 itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-                        deleteDataItemAndUpdateListView(listItem);
-                        // TODO 1: noch nicht in DB gespeichert, wenn erledigt
-                        // TODO 2: erledigte Elemente ausblenden (? siehe Spezifikation)
+                        handleUpdateAction(listItem);
+
+//                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 
@@ -233,6 +240,25 @@ public class OverviewActivity extends Activity {
         startActivityForResult(callDetailIntent, 0);
     }
 
+    private void handleUpdateAction(DataItem item) {
+        new AsyncTask<DataItem, Void, DataItem>() {
+
+            @Override
+            protected DataItem doInBackground(DataItem... params) {
+                if(modelOperations instanceof CRUDOperations) {
+                    return ((CRUDOperations)modelOperations).updateDataItem(params[0]);
+                }
+                return params[0];
+            };
+
+            @Override
+            protected void onPostExecute(DataItem result) {
+                if(result != null)
+                Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_LONG).show();
+            };
+
+        }.execute(item);
+    }
 
     /* implement onActivityResult(): read out result and update the listview using setText() */ // muss implementiert sein, um auf das Resultat reagieren zu können
     @Override
@@ -293,14 +319,39 @@ public class OverviewActivity extends Activity {
         Log.i(logger, "onDestroy()!");
     }
 
-
+//    private MenuItem sortDoneOptionItem;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_activity_overview, menu);
+
+        /*for(int i = 0; i < menu.size(); i++) {
+            MenuItem currentItem = menu.getItem(i);
+            if(currentItem.getItemId() == R.id.optionSortByDone) {
+                currentItem.setEnabled(false);
+                sortDoneOptionItem = currentItem;
+            }
+
+        }*/
+
         return true;
     }
 
     /* implement boolean onOptionsItemSelected(MenuItem item)  */
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.optionAdd) {
+            handleAddAction();
+            return true;
+        }
+        else if(item.getItemId() == R.id.optionDelete) {
+            // TODO: how to get a selected item?
+        }
+//        else if (item.getItemId() == R.id.optionSortByDate) {
+//            sortDoneOptionItem.setEnabled(true);
+//        }
+        return super.onOptionsItemSelected(item);
+    }
 }
