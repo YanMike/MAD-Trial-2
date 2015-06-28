@@ -9,13 +9,6 @@
         android:title="Neues Element"/>
 
     <item
-        android:id="@+id/optionDelete"
-        android:orderInCategory="100"
-        android:icon="@drawable/ic_input_add"
-        app:showAsAction="ifRoom"
-        android:title="Löschen"/>
-
-    <item
         android:id="@+id/optionSortByDone"
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"

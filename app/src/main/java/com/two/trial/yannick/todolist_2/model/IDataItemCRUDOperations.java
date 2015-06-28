@@ -4,6 +4,8 @@ import android.content.Context;
 
 import java.util.List;
 
+
+
 public interface IDataItemCRUDOperations {
 
     public DataItem createDataItem(DataItem item);

@@ -7,6 +7,7 @@ import com.two.trial.yannick.todolist_2.model.DataItem;
 import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 
 import org.jboss.resteasy.client.ProxyFactory;
+import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 
 import java.util.List;
 
@@ -14,10 +15,10 @@ import java.util.List;
 public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations {
 
     private RemoteDataItemCRUDApi serverSideApi;
-    protected static String logger = "remote";
+    private String baseUrl = "http://192.168.178.20:8080/TodolistWebapp/";
 
     public RemoteDataItemCRUDOperationsImpl() {
-        serverSideApi = ProxyFactory.create(RemoteDataItemCRUDApi.class, "http://192.168.178.20:8080/TodolistWebapp/");
+        serverSideApi = ProxyFactory.create(RemoteDataItemCRUDApi.class, baseUrl, new ApacheHttpClient4Executor());
     }
 
     @Override

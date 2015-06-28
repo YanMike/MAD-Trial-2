@@ -92,7 +92,7 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-        //modelOperations = new RemoteDataItemCRUDOperationsImpl();
+//        modelOperations = new RemoteDataItemCRUDOperationsImpl();
         modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
 
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -346,9 +346,7 @@ public class OverviewActivity extends Activity {
             handleAddAction();
             return true;
         }
-        else if(item.getItemId() == R.id.optionDelete) {
-            // TODO: how to get a selected item?
-        }
+
 //        else if (item.getItemId() == R.id.optionSortByDate) {
 //            sortDoneOptionItem.setEnabled(true);
 //        }
