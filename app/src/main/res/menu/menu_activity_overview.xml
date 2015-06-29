@@ -22,4 +22,11 @@
         app:showAsAction="ifRoom"
         android:title="Nach Datum sortieren"/>
 
+    <item
+        android:id="@+id/optionTestSync"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_input_add"
+        app:showAsAction="ifRoom"
+        android:title="Test Sync"/>
+
 </menu>

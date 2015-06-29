@@ -107,6 +107,7 @@ public class OverviewActivity extends Activity {
          */
 
 
+
         /**
          *  Listener for button "Neues Todo anlegen"
          */
@@ -152,8 +153,8 @@ public class OverviewActivity extends Activity {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-                        handleUpdateAction(listItem);
-//                        deleteDataItemAndUpdateListView(listItem);
+//                        handleUpdateAction(listItem);
+                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 
@@ -194,6 +195,10 @@ public class OverviewActivity extends Activity {
 
 
         // read out all items and populate the view
+        readOutDataItemsAndPopulateView();
+    }
+
+    private void readOutDataItemsAndPopulateView() {
         new AsyncTask<Void, Void, List<DataItem>>() {
 
             @Override
@@ -208,6 +213,7 @@ public class OverviewActivity extends Activity {
             }
         }.execute();
     }
+
 
     private void deleteDataItemAndUpdateListView(final DataItem selectedItem) {
         new AsyncTask<Void, Void, Boolean>() {
@@ -361,6 +367,8 @@ public class OverviewActivity extends Activity {
         if(item.getItemId() == R.id.optionAdd) {
             handleAddAction();
             return true;
+        } else if (item.getItemId() == R.id.optionTestSync) {
+            handleTestSyncAction();
         }
 
 //        else if (item.getItemId() == R.id.optionSortByDate) {
@@ -369,7 +377,34 @@ public class OverviewActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+    private void handleTestSyncAction() {
+        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
+            new AsyncTask<Void, Void, Boolean>() {
+
+                @Override
+                protected Boolean doInBackground(Void... params) {
+                    // if deleted successfully -> sync
+                    if( ((SyncedDataItemCRUDOperationsImpl) modelOperations).deleteAllLocalDataItems() ) {
+                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).sync();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                };
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    if(result) {
+                        // if sync has been run successfully, we update the view
+                        adapter.clear();    // view gets cleared
+                        readOutDataItemsAndPopulateView();
+                    }
+                }
+            }.execute();
+        }
+    }
+
+   /* @Override
     protected void onPrepareDialog(int which, Dialog dialog, Bundle args) {
         Log.i(this.getClass().getName(),
                 "onPrepareDoalog(): id of the dialog is: " + which + ", dialog object is: " + dialog + ", args are: " + args);
@@ -396,7 +431,7 @@ public class OverviewActivity extends Activity {
                             }
                         });
         return builder.create();
-    }
+    }*/
 
 
 }

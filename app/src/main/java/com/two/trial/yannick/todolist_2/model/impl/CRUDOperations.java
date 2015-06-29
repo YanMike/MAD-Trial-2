@@ -59,10 +59,11 @@ public class CRUDOperations implements IDataItemCRUDOperations {
      */
     public static final String TABLE_CREATION_QUERY = "CREATE TABLE " + TABNAME
             + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
-//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
-            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT,\n" + COL_DONE + " INTEGER,\n"  + COL_FAV + " INTEGER);";
-//            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT\n" + COL_DONE + " BOOLEAN,\n" + COL_FAV + " BOOLEAN);";
+            + COL_NAME + " TEXT,\n"
+            + COL_EXPIRED + " INTEGER,\n"
+            + COL_DESCR + " TEXT,\n"
+            + COL_DONE + " INTEGER,\n"
+            + COL_FAV + " INTEGER);";
 
     /**
      * the -> where clause <- for item deletion
