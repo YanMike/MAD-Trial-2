@@ -74,11 +74,4 @@ public class DataItem implements Serializable {
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
     }
-
-    /* DO NOT DO THIS !!! DataItem should not know how it is displayed - recording 13.May2015, 20min */
-//  public String toString() {
-//        return "item " + this.name + " " + this.expiry + " " + this.description;
-//        return "item " + this.name + " " + this.expiry + " " + this.favourite + " " + this.done + " " + this.description;
-//    }
-    /**/
 }

@@ -98,9 +98,10 @@ public class OverviewActivity extends Activity {
         /**
          *
          */
-        modelOperations = new RemoteDataItemCRUDOperationsImpl();
 //        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
-//        modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
+//        modelOperations = new RemoteDataItemCRUDOperationsImpl();
+//        modelOperations = new RemoteDataItemCRUDOperationsImplRetrofit();
+        modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
         /**
          *
          */
@@ -137,22 +138,22 @@ public class OverviewActivity extends Activity {
                 }
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
+                final DataItem listItem = getItem(position);
+                itemNameText.setText(listItem.getName()); // + " - " + listItem.getDescription());
+
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
 
                 itemChecked.setOnCheckedChangeListener(null); // harte Methode, um beim Wiederverwenden der Ansicht nicht den alten Listener zu überschreiben
 
-                final DataItem listItem = getItem(position);
 
-                itemNameText.setText(listItem.getName()); // + " - " + listItem.getDescription());
-                itemChecked.setChecked(listItem.isDone());
+//                itemChecked.setChecked(listItem.isDone());
 
                 itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-//                        handleUpdateAction(listItem);
-                        Toast.makeText(OverviewActivity.this, "test ", Toast.LENGTH_LONG).show();
-                        deleteDataItemAndUpdateListView(listItem);
+                        handleUpdateAction(listItem);
+//                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 

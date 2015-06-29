@@ -30,7 +30,7 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         return remoteCreated;
     }
 
-    // zugriff auf locale db
+    // zugriff auf lokale db
     @Override
     public List<DataItem> readAllDataItems() {
         return localCRUD.readAllDataItems();

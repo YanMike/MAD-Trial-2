@@ -29,7 +29,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
     /**
      * the db name
      */
-    public static final String DBNAME = "dataItemsDescr.db";
+    public static final String DBNAME = "allAttr.db";
 
     /**
      * the initial version of the db based on which we decide whether to create
@@ -52,7 +52,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
     public static final String COL_EXPIRED  = "expired";
     public static final String COL_DESCR    = "description";
     public static final String COL_DONE     = "done";
-//    public static final String COL_FAV      = "favourite";
+    public static final String COL_FAV      = "favourite";
 
     /**
      * the creation query (if there is trouble try to change expired from integer to text...)
@@ -61,7 +61,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
             + " (" + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,\n"
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER);";
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT);";
-            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT,\n" + COL_DONE + " Text);";
+            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT,\n" + COL_DONE + " INTEGER,\n"  + COL_FAV + " INTEGER);";
 //            + COL_NAME + " TEXT,\n" + COL_EXPIRED + " INTEGER,\n" + COL_DESCR + " TEXT\n" + COL_DONE + " BOOLEAN,\n" + COL_FAV + " BOOLEAN);";
 
     /**
@@ -136,7 +136,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
             // ASC = aufsteigende Reihenfolge
 //        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
 //        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
-        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE}, null, null, null, null, COL_ID + " ASC");
+        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE, COL_FAV}, null, null, null, null, COL_ID + " ASC");
 
 		/* use the cursor, moving to the first dataset */
             // moveToFirst schlägt fehlt, wenn kein Inhalt da, andernfalls zeigt Cursor auf ersten Datensatz der auszugebenden Tabelle
@@ -151,7 +151,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
                 currentItem.setExpiry(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
                 currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
                 currentItem.setDone(cursor.getInt(cursor.getColumnIndex(COL_DONE)) == 1 ? true : false);
-//                currentItem.setFavourite(cursor.getInt(cursor.getColumnIndex(COL_FAV)) == 1 = true : false);
+                currentItem.setFavourite(cursor.getInt(cursor.getColumnIndex(COL_FAV)) == 1 ? true : false);
                 currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
                 items.add(currentItem);
             } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
@@ -235,6 +235,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
         values.put(COL_EXPIRED, item.getExpiry());
         values.put(COL_DESCR, item.getDescription());
         values.put(COL_DONE, item.isDone() ? 1 : 0);
+        values.put(COL_FAV, item.isFavourite() ? 1 : 0);
 
         return values;
     }
