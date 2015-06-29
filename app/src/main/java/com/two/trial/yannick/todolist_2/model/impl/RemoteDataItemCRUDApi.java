@@ -14,8 +14,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("/todos")
-@Produces({ "application/json" })
-@Consumes({ "application/json" })
+@Produces({MediaType.APPLICATION_JSON})
+@Consumes({MediaType.APPLICATION_JSON})
 public interface RemoteDataItemCRUDApi {
 
     @POST

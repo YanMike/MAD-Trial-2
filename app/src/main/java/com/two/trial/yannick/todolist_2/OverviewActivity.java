@@ -160,6 +160,7 @@ public class OverviewActivity extends Activity {
                 // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
             }
         };
+
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
 
@@ -168,6 +169,8 @@ public class OverviewActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO REAL TODO : UMSETZEN -  ÜBERGANG IN DETAILVIEW
 
+                Toast.makeText(OverviewActivity.this, "here", Toast.LENGTH_SHORT).show();
+                handleAddAction();
                 // test
                 /*
                 TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_textview_simple, null);
@@ -227,7 +230,7 @@ public class OverviewActivity extends Activity {
      */
     private void handleAddAction() {
         /* first simply use a toast to show feedback of the onclick action */
-        Toast.makeText(this, "handleAddAction()", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "no param", Toast.LENGTH_LONG).show();
 
     	/* then call the Detailview Activity */
         Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
@@ -238,6 +241,12 @@ public class OverviewActivity extends Activity {
         callDetailIntent.putExtra("callTime", System.currentTimeMillis());
     	/* actually send the intent triggering the display of the activity - use startActivityForResult */
         startActivityForResult(callDetailIntent, 0);
+    }
+
+    private void handleAddAction(DataItem item) {
+        /* first simply use a toast to show feedback of the onclick action */
+        Toast.makeText(this, "with param", Toast.LENGTH_LONG).show();
+
     }
 
     private void handleUpdateAction(DataItem item) {

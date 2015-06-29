@@ -24,7 +24,7 @@ public class DataItem implements Serializable {
         this.description = description;
 		this.expiry = expiry;
         this.done = done;
-//        this.favourite = favourite;
+        this.favourite = favourite;
 	}
 	
 	public String getName() {
