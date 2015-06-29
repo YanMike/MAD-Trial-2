@@ -3,7 +3,10 @@ package com.two.trial.yannick.todolist_2;
 import com.two.trial.yannick.todolist_2.model.*;
 import com.two.trial.yannick.todolist_2.model.impl.*;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
@@ -92,27 +95,24 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-//        modelOperations = new RemoteDataItemCRUDOperationsImpl();
-        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
+        /**
+         *
+         */
+        modelOperations = new RemoteDataItemCRUDOperationsImpl();
+//        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
+//        modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
+        /**
+         *
+         */
 
+
+        /**
+         *  Listener for button "Neues Todo anlegen"
+         */
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 handleAddAction();
-
-                /**
-                 * only for development - to delete database to add new columns or make any other basical changes
-                */
-                /*
-                try {
-                    modelOperations.deleteSQLiteDatabase(OverviewActivity.this);
-                    Log.i(logger, "database deleted");
-                } catch(Exception e) {
-                    Log.i(logger, "database deletion failed: " + e);
-                    e.printStackTrace();
-                }
-                */
-                /* *** */
             }
         });
 
@@ -150,9 +150,9 @@ public class OverviewActivity extends Activity {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-                        handleUpdateAction(listItem);
-
-//                        deleteDataItemAndUpdateListView(listItem);
+//                        handleUpdateAction(listItem);
+                        Toast.makeText(OverviewActivity.this, "test ", Toast.LENGTH_LONG).show();
+                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 
@@ -161,6 +161,9 @@ public class OverviewActivity extends Activity {
             }
         };
 
+        /**
+         *
+         */
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
 
@@ -168,17 +171,19 @@ public class OverviewActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO REAL TODO : UMSETZEN -  ÜBERGANG IN DETAILVIEW
-
-                Toast.makeText(OverviewActivity.this, "here", Toast.LENGTH_SHORT).show();
+                // => übergabe des bestehenden items
                 handleAddAction();
-                // test
+
+
+
+                /* *** */
+                // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
                 /*
                 TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_textview_simple, null);
                 textView.setText(String.valueOf(System.currentTimeMillis()));
 
                 ((ViewGroup)view).addView(textView);
                 */
-                // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
                 /* *** */
 
 
@@ -325,6 +330,7 @@ public class OverviewActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        progressDialog.dismiss();
         Log.i(logger, "onDestroy()!");
     }
 
@@ -361,4 +367,35 @@ public class OverviewActivity extends Activity {
 //        }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onPrepareDialog(int which, Dialog dialog, Bundle args) {
+        Log.i(this.getClass().getName(),
+                "onPrepareDoalog(): id of the dialog is: " + which + ", dialog object is: " + dialog + ", args are: " + args);
+        ((AlertDialog)dialog).setMessage("Das ist ein AlertDialog (" + args.getInt("dialogCount") + ")!");
+    }
+
+    private AlertDialog createAlertDialog(String alertMsg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(alertMsg)
+                .setPositiveButton("Ja",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                                Toast.makeText(OverviewActivity.this, "OK i guess?", Toast.LENGTH_LONG).show();
+                            }
+                        })
+                .setNegativeButton("Nein",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                                Toast.makeText(OverviewActivity.this, "Cancel i guess", Toast.LENGTH_LONG).show();
+                            }
+                        });
+        return builder.create();
+    }
+
+
 }

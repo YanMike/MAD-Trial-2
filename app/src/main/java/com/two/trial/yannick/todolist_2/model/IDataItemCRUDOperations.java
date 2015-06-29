@@ -13,6 +13,4 @@ public interface IDataItemCRUDOperations {
     public List<DataItem> readAllDataItems();
 
     boolean deleteDataItem(long dataItemId);
-
-    void deleteSQLiteDatabase(Context context);
 }

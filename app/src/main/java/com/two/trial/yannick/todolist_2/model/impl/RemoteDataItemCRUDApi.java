@@ -2,6 +2,9 @@ package com.two.trial.yannick.todolist_2.model.impl;
 
 import com.two.trial.yannick.todolist_2.model.DataItem;
 
+import org.jboss.resteasy.annotations.Body;
+
+import java.net.Proxy;
 import java.util.List;
 
 import javax.ws.rs.Consumes;

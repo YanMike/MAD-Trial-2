@@ -35,9 +35,4 @@ public class RemoteDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     public boolean deleteDataItem(long dataItemId) {
         return serverSideApi.deletaDataItem(dataItemId);
     }
-
-    @Override
-    public void deleteSQLiteDatabase(Context context) {
-
-    }
 }
