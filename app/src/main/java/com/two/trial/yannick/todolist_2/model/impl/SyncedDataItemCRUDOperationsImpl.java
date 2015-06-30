@@ -1,7 +1,11 @@
 package com.two.trial.yannick.todolist_2.model.impl;
 
+import android.accounts.NetworkErrorException;
 import android.app.Activity;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.two.trial.yannick.todolist_2.model.DataItem;
@@ -10,6 +14,8 @@ import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 import java.util.List;
 
 public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations {
+
+    protected static String logger = "syncedCRUDOps";
 
     private boolean syncDone = false;
 
@@ -162,4 +168,6 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
             return false;
         }
     }
+
+
 }

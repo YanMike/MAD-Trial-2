@@ -6,11 +6,15 @@ import com.two.trial.yannick.todolist_2.model.impl.*;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,9 +30,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.SQLClientInfoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
 public class OverviewActivity extends Activity {
 
@@ -77,6 +87,8 @@ public class OverviewActivity extends Activity {
 
         Log.i(logger, "called: onCreate()!");
 
+
+
         /* set the view -> choose the layout */
         setContentView(R.layout.layout_activity_overview);
 
@@ -95,16 +107,21 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-        /**
-         *
-         */
-//        modelOperations = new CRUDOperations(this);       // Klasse muss übergeben werden als Context
-//        modelOperations = new RemoteDataItemCRUDOperationsImpl();
-//        modelOperations = new RemoteDataItemCRUDOperationsImplRetrofit();
-        modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
-        /**
-         *
-         */
+        if(isOnline()) {
+            Log.i(logger, "Network Log: Network available");
+                // TODO: check if WebApp is reachable
+            isHostRechable();
+            if( true ) {
+                modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
+            } else {
+                modelOperations = new CRUDOperations(this);
+            }
+
+
+        } else {
+            Log.i(logger, "Network Log: No network available");
+            modelOperations = new CRUDOperations(this);
+        }
 
 
 
@@ -153,8 +170,8 @@ public class OverviewActivity extends Activity {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-//                        handleUpdateAction(listItem);
-                        deleteDataItemAndUpdateListView(listItem);
+                        handleUpdateAction(listItem);
+//                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 
@@ -196,6 +213,12 @@ public class OverviewActivity extends Activity {
 
         // read out all items and populate the view
         readOutDataItemsAndPopulateView();
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void readOutDataItemsAndPopulateView() {
@@ -465,5 +488,34 @@ public class OverviewActivity extends Activity {
         return builder.create();
     }*/
 
+    private Boolean isHostRechable() {
+
+        AsyncTask a1 = new AsyncTask<Void, Void, Boolean>() {
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");
+                    final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+                    urlc.setRequestProperty("User-Agent", "Android Application");
+                    urlc.setRequestProperty("Connection", "close");
+                    urlc.setConnectTimeout(10 * 1000);
+                    urlc.connect();
+
+                    if (urlc.getResponseCode() == 200) {
+                        Log.i(logger, "Network Log: Host reachable");
+                        return true;
+                    }
+                    Log.i(logger, "Network Log: " + urlc.getResponseCode());
+
+                } catch (Throwable e) {
+                    Log.i(logger, "Network Log: Host not reachable");
+                    e.printStackTrace();
+                }
+                return false;
+            };
+        };
+
+    }
 
 }
