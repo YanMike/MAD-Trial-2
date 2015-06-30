@@ -24,11 +24,64 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         this.context = context;
     }
 
+    public void exchangeTodos() {
+        List<DataItem> localData = localCRUD.readAllDataItems();
+
+        if(localData.size() > 0) {
+            /*
+             * Case: todos are stored locally
+             * Requirement: delete all remotely stored todos & copy local todos to WebApp
+             */
+            if( deleteAllRemoteDataItems() ) {
+                for(DataItem currentItem : localData) {
+                    remoteCRUD.createDataItem(currentItem);
+                }
+            } else {
+                //todo: give feedback
+                ((Activity)context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, "remote deletion crashed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+        } else {
+            /*
+             * Case: no todos are stored locally
+             * Requirement: copy all remote todos to local db
+             */
+            List<DataItem> remoteData = remoteCRUD.readAllDataItems();
+            if(remoteData.size() > 0) {
+                for(DataItem currentItem : remoteData) {
+                    if(remoteCRUD.deleteDataItem(currentItem.getId())) {
+                        currentItem.setId(0); // zuweisen nicht vergessen
+                        this.createDataItem(currentItem);
+                    } else {
+                        // todo: give feedback that some problem occured
+                        ((Activity)context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, "sync is running", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+
+
     // TODO: Write my own function / find my own way
-    public void sync() {
+    /*public void sync() {
         List<DataItem> localData = localCRUD.readAllDataItems();
         if(localData.size() > 0) {
             // todo: remove all existing data items from server and add the local ones
+
+            for(DataItem localItem : localData) {
+                remoteCRUD.createDataItem(localItem);
+            }
         }
         else {
             List<DataItem> remoteData = remoteCRUD.readAllDataItems();
@@ -59,7 +112,7 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
                 }
             }
         }
-    }
+    }*/
 
     public boolean deleteAllLocalDataItems() {
         List<DataItem> localItems = localCRUD.readAllDataItems();
@@ -70,6 +123,10 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
             }
         }
         return true;
+    }
+
+    public boolean deleteAllRemoteDataItems() {
+        return remoteCRUD.deleteAllRemoteDataItems();
     }
 
     @Override
@@ -88,7 +145,8 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     @Override
     public List<DataItem> readAllDataItems() {
         if(!syncDone) {
-            sync();
+//            sync();
+            exchangeTodos();
             syncDone = true;
         }
         return localCRUD.readAllDataItems();

@@ -40,4 +40,8 @@ public class RemoteDataItemCRUDOperationsImplRetrofit implements IDataItemCRUDOp
     public boolean deleteDataItem(long dataItemId) {
         return serverSideApi.deletaDataItem(dataItemId);
     }
+
+    public boolean deleteAllRemoteDataItems() {
+        return serverSideApi.deleteAllRemoteDataItems();
+    }
 }

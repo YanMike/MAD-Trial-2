@@ -1,4 +1,4 @@
-package com.two.trial.yannick.todolist_2.model.impl;
+package com.two.trial.yannick.todolist_2.model.jaxrs_impl;
 
 import com.two.trial.yannick.todolist_2.model.DataItem;
 

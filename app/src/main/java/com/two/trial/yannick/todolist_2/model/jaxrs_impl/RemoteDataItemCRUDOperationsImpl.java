@@ -1,7 +1,4 @@
-package com.two.trial.yannick.todolist_2.model.impl;
-
-import android.content.Context;
-import android.util.Log;
+package com.two.trial.yannick.todolist_2.model.jaxrs_impl;
 
 import com.two.trial.yannick.todolist_2.model.DataItem;
 import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;

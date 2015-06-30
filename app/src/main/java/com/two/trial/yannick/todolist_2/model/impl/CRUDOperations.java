@@ -290,12 +290,4 @@ public class CRUDOperations implements IDataItemCRUDOperations {
         this.db.close();
         Log.i(logger, "db has been closed");
     }
-
-    /**
-     * delete the database
-     */
-    public void deleteSQLiteDatabase(Context context) {
-        context.deleteDatabase(DBNAME);
-    }
-
 }

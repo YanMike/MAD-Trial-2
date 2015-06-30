@@ -24,4 +24,8 @@ public interface RemoteDataItemCRUDApiRetrofit {
     @DELETE("/todos/{id}")
     @Headers({"Content-Type:application/json"})
     public boolean deletaDataItem(@Path("id") long dataItemId);
+
+    @DELETE("/todos")
+    @Headers({"Content-Type:application/json"})
+    public boolean deleteAllRemoteDataItems();
 }

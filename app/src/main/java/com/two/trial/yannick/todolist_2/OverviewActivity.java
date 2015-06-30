@@ -377,17 +377,47 @@ public class OverviewActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+//    private void handleTestSyncAction() {
+//        if (modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
+//            new AsyncTask<Void, Void, Boolean>() {
+//
+//                @Override
+//                protected Boolean doInBackground(Void... params) {
+//                    // if deleted successfully -> sync
+//                    if (((SyncedDataItemCRUDOperationsImpl) modelOperations).deleteAllLocalDataItems()) {
+////                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).sync();
+//                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
+//                        return true;
+//                    } else {
+//                        return false;
+//                    }
+//                }
+//
+//                ;
+//
+//                @Override
+//                protected void onPostExecute(Boolean result) {
+//                    if (result) {
+//                        // if sync has been run successfully, we update the view
+//                        adapter.clear();    // view gets cleared
+//                        readOutDataItemsAndPopulateView();
+//                    }
+//                }
+//            }.execute();
+//        }
+//    }
+
     private void handleTestSyncAction() {
         if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
             new AsyncTask<Void, Void, Boolean>() {
 
                 @Override
                 protected Boolean doInBackground(Void... params) {
-                    // if deleted successfully -> sync
-                    if( ((SyncedDataItemCRUDOperationsImpl) modelOperations).deleteAllLocalDataItems() ) {
-                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).sync();
+                    try{
+                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
                         return true;
-                    } else {
+                    }catch (Exception e) {
+                        e.printStackTrace();
                         return false;
                     }
                 };
@@ -403,6 +433,8 @@ public class OverviewActivity extends Activity {
             }.execute();
         }
     }
+
+
 
    /* @Override
     protected void onPrepareDialog(int which, Dialog dialog, Bundle args) {
