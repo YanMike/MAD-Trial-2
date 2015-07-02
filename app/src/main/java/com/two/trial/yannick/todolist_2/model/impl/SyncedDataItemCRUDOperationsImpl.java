@@ -159,6 +159,12 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     }
 
     @Override
+    public DataItem updateDataItem(DataItem item) {
+        localCRUD.updateDataItem(item);
+        return remoteCRUD.updateDataItem(item);
+    }
+
+    @Override
     public boolean deleteDataItem(long dataItemId) {
         boolean localDeleted = localCRUD.deleteDataItem(dataItemId);
         if(localDeleted) {

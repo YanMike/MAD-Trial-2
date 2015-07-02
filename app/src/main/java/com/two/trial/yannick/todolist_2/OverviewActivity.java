@@ -267,20 +267,12 @@ public class OverviewActivity extends Activity {
         Toast.makeText(this, "no param", Toast.LENGTH_LONG).show();
 
     	/* then call the Detailview Activity */
-        Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
 
     	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
+        Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
 
-    	/* pass arguments ("extras") to the detailview - we show it using the current time as an example */
-        callDetailIntent.putExtra("callTime", System.currentTimeMillis());
     	/* actually send the intent triggering the display of the activity - use startActivityForResult */
         startActivityForResult(callDetailIntent, 0);
-    }
-
-    private void handleAddAction(DataItem item) {
-        /* first simply use a toast to show feedback of the onclick action */
-        Toast.makeText(this, "with param", Toast.LENGTH_LONG).show();
-
     }
 
     private void handleUpdateAction(DataItem item) {
@@ -288,9 +280,7 @@ public class OverviewActivity extends Activity {
 
             @Override
             protected DataItem doInBackground(DataItem... params) {
-                if(modelOperations instanceof CRUDOperations) {
-                    return ((CRUDOperations)modelOperations).updateDataItem(params[0]);
-                }
+                modelOperations.updateDataItem(params[0]);
                 return params[0];
             };
 
