@@ -96,9 +96,7 @@ public class Login extends Activity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-                AsyncTask asyncTask = new AsyncTask<Void, Void, Void>() {
+                new AsyncTask<Void, Void, Void>() {
                     private ProgressDialog testDialog = null;
 
                     @Override

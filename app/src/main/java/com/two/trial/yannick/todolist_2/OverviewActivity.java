@@ -58,6 +58,7 @@ public class OverviewActivity extends Activity {
      * a progress dialog
      */
     private ProgressDialog progressDialog;
+    private AlertDialog.Builder alertDialog;
 
     // for ListView: declare a list of DataItem objects that will collect the items created by the user
     private List<DataItem> dataItems = new ArrayList<DataItem>();
@@ -90,6 +91,16 @@ public class OverviewActivity extends Activity {
         addButton    = (Button) findViewById(R.id.addButton);
 
         this.progressDialog = new ProgressDialog(this);
+
+        this.alertDialog = new AlertDialog.Builder(this);
+
+        alertDialog.setMessage("Das ist ein AlertDialog")
+                .setPositiveButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
 
         /*
          * set an  onClick listener on the addButton
@@ -419,30 +430,32 @@ public class OverviewActivity extends Activity {
 //    }
 
     private void handleTestSyncAction() {
-        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
-            new AsyncTask<Void, Void, Boolean>() {
 
-                @Override
-                protected Boolean doInBackground(Void... params) {
-                    try{
-                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
-                        return true;
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                };
 
-                @Override
-                protected void onPostExecute(Boolean result) {
-                    if(result) {
-                        // if sync has been run successfully, we update the view
-                        adapter.clear();    // view gets cleared
-                        readOutDataItemsAndPopulateView();
-                    }
-                }
-            }.execute();
-        }
+//        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
+//            new AsyncTask<Void, Void, Boolean>() {
+//
+//                @Override
+//                protected Boolean doInBackground(Void... params) {
+//                    try{
+//                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
+//                        return true;
+//                    }catch (Exception e) {
+//                        e.printStackTrace();
+//                        return false;
+//                    }
+//                };
+//
+//                @Override
+//                protected void onPostExecute(Boolean result) {
+//                    if(result) {
+//                        // if sync has been run successfully, we update the view
+//                        adapter.clear();    // view gets cleared
+//                        readOutDataItemsAndPopulateView();
+//                    }
+//                }
+//            }.execute();
+//        }
     }
 
 
@@ -476,37 +489,19 @@ public class OverviewActivity extends Activity {
         return builder.create();
     }*/
 
-
-    private AlertDialog createAlertDialog() {
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(OverviewActivity.this);
-
-        alertBuilder.setMessage(R.string.noHost_alert)
-                .setNegativeButton(R.string.ok_dialog, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-        return alertBuilder.create();
-    }
-
-    public static final int ALERT_DIALOG = 0;
-    public int dialogCount = 0;
-    /**
-     * display a dialog passing arguments
-     */
-    public void runDialog() {
-        Bundle args = new Bundle();
-        args.putInt("dialogCount", dialogCount++);
-
-        showDialog(ALERT_DIALOG, args);
-    }
-
-    boolean testing = false;
+    public boolean testing = false;
 
     private void isHostRechable() {
-        AsyncTask  hostTask = new AsyncTask<Void, Void, Boolean>() {
-            @Override
+
+        AsyncTask hostTask = new AsyncTask<Void, Void, Boolean>() {
+            private ProgressDialog hostDialog = null;
+
+           @Override
+           protected void onPreExecute() {
+               hostDialog = ProgressDialog.show(OverviewActivity.this, "Bitte warten Sie...", "waehrend des Ladevorgangs.");
+           }
+
+           @Override
             protected Boolean doInBackground(Void... params) {
                 try {
                     URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");
@@ -520,11 +515,10 @@ public class OverviewActivity extends Activity {
                         Log.i(logger, "Network Log: Host reachable");
                         testing = true;
                     }
-                    Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
-
+//                    Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
                 } catch (Throwable e) {
                     Log.i(logger, "Network Log: Host not reachable");
-                    e.printStackTrace();
+//                    e.printStackTrace();
                     testing = false;
                 }
                 return testing;
@@ -532,19 +526,28 @@ public class OverviewActivity extends Activity {
 
             @Override
             protected void onPostExecute(Boolean aBoolean) {
-                if( aBoolean == true) {
-                    modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
-                    Log.i(logger, "Network Log: synced");
-                } else {
-                    modelOperations = new CRUDOperations(OverviewActivity.this);
-                    Log.i(logger, "Network Log: local");
-                }
+                hostDialog.cancel();
             }
         }.execute();
 
-
-
-
+        try {
+//            Log.i(logger, "Network Log - true or false: " + String.valueOf(hostTask.get()));
+            if( hostTask.get() == true) {
+                modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
+                Log.i(logger, "Network Log: synced");
+            } else {
+                modelOperations = new CRUDOperations(OverviewActivity.this);
+                alertDialog.setMessage("Access to web application is not possible. App will try to synchronize Todos on next restart.");
+                alertDialog.show();
+                Log.i(logger, "Network Log: local");
+            }
+        } catch (InterruptedException e) {
+            Log.i(logger, "Network Log: interrupted");
+//            e.printStackTrace();
+        } catch (ExecutionException e) {
+            Log.i(logger, "Network Log: execution");
+//            e.printStackTrace();
+        }
     }
 
 }
