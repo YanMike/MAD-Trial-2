@@ -14,4 +14,9 @@
 
     <string name="action_settings">Settings</string>
 
+
+    <!-- (alert) dialogs -->
+    <string name="noHost_alert">Synchronisation with host not possible. All changes will stored locally only.</string>
+    <string name="ok_dialog">OK</string>
+
 </resources>

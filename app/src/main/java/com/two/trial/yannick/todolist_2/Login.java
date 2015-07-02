@@ -1,7 +1,9 @@
 package com.two.trial.yannick.todolist_2;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,9 +15,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Toast;
-
-import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 
 
 public class Login extends Activity {
@@ -97,12 +96,50 @@ public class Login extends Activity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(FrameLayout.class.getName(), "onClick(): " + v);
-                startActivity(new Intent(Login.this, OverviewActivity.class));
+
+
+                AsyncTask asyncTask = new AsyncTask<Void, Void, Void>() {
+                    private ProgressDialog testDialog = null;
+
+                    @Override
+                    protected void onPreExecute() {
+                        testDialog = ProgressDialog.show(Login.this, "Bitte warten Sie...", "waehrend des Ladevorgangs.");
+                    }
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+//                        Log.i(FrameLayout.class.getName(), "onClick(): ");
+                        // TODO not with intent !?
+                        startActivity(new Intent(Login.this, OverviewActivity.class));
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void o) {
+//                        Log.i(Login.this.getClass().getName(),
+//                                "onPostExecute()...");
+                        testDialog.cancel();
+                    }
+
+                }.execute();
+
+
+
             }
         });
     }
 
+    public static final int ALERT_DIALOG = 0;
+    public int dialogCount = 0;
+    /**
+     * display a dialog passing arguments
+     */
+    public void runDialog() {
+        Bundle args = new Bundle();
+        args.putInt("dialogCount", dialogCount++);
+
+        showDialog(ALERT_DIALOG, args);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

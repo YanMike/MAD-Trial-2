@@ -4,7 +4,6 @@ import com.two.trial.yannick.todolist_2.model.*;
 import com.two.trial.yannick.todolist_2.model.impl.*;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,10 +13,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,22 +27,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.sql.SQLClientInfoException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
+import java.util.concurrent.ExecutionException;
 
 public class OverviewActivity extends Activity {
 
     protected static String logger = "OverviewActivity";
 
     public OverviewActivity() {
-        Log.i(logger, "called: <constructor>");                 // i = info, d = debug, e = error
+//        Log.i(logger, "called: <constructor>");                 // i = info, d = debug, e = error
     }
 
     /*
@@ -85,7 +78,7 @@ public class OverviewActivity extends Activity {
         // call onCreate as super class !! important !! for all classes of the life cycle (that android framework can work as a framework)
         super.onCreate(savedInstanceState);
 
-        Log.i(logger, "called: onCreate()!");
+//        Log.i(logger, "called: onCreate()!");
 
 
 
@@ -110,16 +103,11 @@ public class OverviewActivity extends Activity {
         if(isOnline()) {
             Log.i(logger, "Network Log: Network available");
                 // TODO: check if WebApp is reachable
+
             isHostRechable();
-            if( true ) {
-                modelOperations = new SyncedDataItemCRUDOperationsImpl(this);
-            } else {
-                modelOperations = new CRUDOperations(this);
-            }
-
-
         } else {
             Log.i(logger, "Network Log: No network available");
+
             modelOperations = new CRUDOperations(this);
         }
 
@@ -145,11 +133,11 @@ public class OverviewActivity extends Activity {
 
                 if(existingView != null) {
                     listItemView = existingView;
-                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
+//                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
-                    Log.i(logger, "creating new view for position " + position + ": " + listItemView);
+//                    Log.i(logger, "creating new view for position " + position + ": " + listItemView);
 
                     //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
 
@@ -320,10 +308,10 @@ public class OverviewActivity extends Activity {
 
         new AsyncTask<DataItem, Void, DataItem>() {
             // Aufruf von onPreExecute erfolgt auf UI Thread
-            /*@Override
+            @Override
             protected void onPreExecute() {
-                progressDialog.show();
-            };*/
+//                progressDialog.show();
+            };
 
             @Override
             protected DataItem doInBackground(DataItem... params) {
@@ -335,7 +323,7 @@ public class OverviewActivity extends Activity {
             protected void onPostExecute(DataItem result) {
                 //adapter.addAll(result);
                 updateItemListView(result);
-                //progressDialog.hide();
+//                progressDialog.hide();
             };
 
         }.execute(newItem);
@@ -354,14 +342,14 @@ public class OverviewActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(logger, "onResume()!");
+//        Log.i(logger, "onResume()!");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         progressDialog.dismiss();
-        Log.i(logger, "onDestroy()!");
+//        Log.i(logger, "onDestroy()!");
     }
 
 //    private MenuItem sortDoneOptionItem;
@@ -488,10 +476,36 @@ public class OverviewActivity extends Activity {
         return builder.create();
     }*/
 
-    private Boolean isHostRechable() {
 
-        AsyncTask a1 = new AsyncTask<Void, Void, Boolean>() {
+    private AlertDialog createAlertDialog() {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(OverviewActivity.this);
 
+        alertBuilder.setMessage(R.string.noHost_alert)
+                .setNegativeButton(R.string.ok_dialog, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        return alertBuilder.create();
+    }
+
+    public static final int ALERT_DIALOG = 0;
+    public int dialogCount = 0;
+    /**
+     * display a dialog passing arguments
+     */
+    public void runDialog() {
+        Bundle args = new Bundle();
+        args.putInt("dialogCount", dialogCount++);
+
+        showDialog(ALERT_DIALOG, args);
+    }
+
+    boolean testing = false;
+
+    private void isHostRechable() {
+        AsyncTask  hostTask = new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
@@ -504,17 +518,32 @@ public class OverviewActivity extends Activity {
 
                     if (urlc.getResponseCode() == 200) {
                         Log.i(logger, "Network Log: Host reachable");
-                        return true;
+                        testing = true;
                     }
-                    Log.i(logger, "Network Log: " + urlc.getResponseCode());
+                    Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
 
                 } catch (Throwable e) {
                     Log.i(logger, "Network Log: Host not reachable");
                     e.printStackTrace();
+                    testing = false;
                 }
-                return false;
-            };
-        };
+                return testing;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if( aBoolean == true) {
+                    modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
+                    Log.i(logger, "Network Log: synced");
+                } else {
+                    modelOperations = new CRUDOperations(OverviewActivity.this);
+                    Log.i(logger, "Network Log: local");
+                }
+            }
+        }.execute();
+
+
+
 
     }
 
