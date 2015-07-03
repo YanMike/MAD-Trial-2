@@ -95,7 +95,8 @@ public class OverviewActivity extends Activity {
         this.alertDialog = new AlertDialog.Builder(this);
 
         alertDialog.setMessage("Das ist ein AlertDialog")
-                .setPositiveButton("Ok",
+                .setTitle("Offline Mode")
+                .setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
@@ -113,15 +114,11 @@ public class OverviewActivity extends Activity {
         // instantiate the model operations
         if(isOnline()) {
             Log.i(logger, "Network Log: Network available");
-                // TODO: check if WebApp is reachable
-
             isHostRechable();
         } else {
             Log.i(logger, "Network Log: No network available");
-
             modelOperations = new CRUDOperations(this);
         }
-
 
 
         /**
@@ -156,7 +153,7 @@ public class OverviewActivity extends Activity {
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
                 final DataItem listItem = getItem(position);
-                itemNameText.setText(listItem.getName()); // + " - " + listItem.getDescription());
+                itemNameText.setText(listItem.getName() + " - " + listItem.getId()); // + " - " + listItem.getDescription());
 
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
 
@@ -169,7 +166,7 @@ public class OverviewActivity extends Activity {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
-                        handleUpdateAction(listItem);
+                        updateAndShowNewItem(listItem);
 //                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
@@ -180,7 +177,7 @@ public class OverviewActivity extends Activity {
         };
 
         /**
-         *
+         * click on item
          */
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
@@ -188,12 +185,11 @@ public class OverviewActivity extends Activity {
         ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO REAL TODO : UMSETZEN -  ÜBERGANG IN DETAILVIEW
-                // => übergabe des bestehenden items
-                handleAddAction();
+
+                handleUpdateTodoAction(adapter.getItem(position).getId());
 
 
-
+//                handleAddAction();
                 /* *** */
                 // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
                 /*
@@ -208,11 +204,50 @@ public class OverviewActivity extends Activity {
             }
         });
 
-
-
         // read out all items and populate the view
-        readOutDataItemsAndPopulateView();
+//        readOutDataItemsAndPopulateView();
     }
+
+    /**
+     * deal with adding a new element to the list
+     */
+    private void handleAddAction() {
+    	/* then call the Detailview Activity */
+
+    	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
+        Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
+
+    	/* actually send the intent triggering the display of the activity - use startActivityForResult */
+        startActivityForResult(callDetailIntent, 0);
+    }
+
+    /**
+     * gets called, when clicked on item
+     * @param id
+     */
+    private void handleUpdateTodoAction(long id) {
+        Log.i(logger, "ID: " + id);
+    	/* then call the Detailview Activity */
+
+    	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
+        Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
+        Bundle paramBundle = new Bundle();
+
+        paramBundle.putLong("paramItemId", id);
+        // TODO: decide, either handover all params or call readDataItem within DetailViewActivity(id)
+        DataItem paramItem = modelOperations.readDataItem(id);
+
+        paramBundle.putString("name", paramItem.getName());
+        paramBundle.putString("description", paramItem.getDescription());
+        paramBundle.putString("done", String.valueOf(paramItem.isDone()));
+        paramBundle.putString("favourite", String.valueOf(paramItem.isFavourite()));
+
+        callDetailIntent.putExtras(paramBundle);
+
+    	/* actually send the intent triggering the display of the activity - use startActivityForResult */
+        startActivityForResult(callDetailIntent, 1);
+    }
+
 
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -259,23 +294,11 @@ public class OverviewActivity extends Activity {
         }.execute();
     }
 
-    /*
-     * deal with adding a new element to the list
-     */
-    private void handleAddAction() {
-        /* first simply use a toast to show feedback of the onclick action */
-        Toast.makeText(this, "no param", Toast.LENGTH_LONG).show();
 
-    	/* then call the Detailview Activity */
 
-    	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
-        Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
 
-    	/* actually send the intent triggering the display of the activity - use startActivityForResult */
-        startActivityForResult(callDetailIntent, 0);
-    }
 
-    private void handleUpdateAction(DataItem item) {
+    private void updateAndShowNewItem(DataItem item) {
         new AsyncTask<DataItem, Void, DataItem>() {
 
             @Override
@@ -297,9 +320,16 @@ public class OverviewActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // check whether we have a result object
+        /* requestCodes:
+         *  0 -> create
+         *  1 -> update
+         */
         if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            DataItem item =(DataItem) data.getSerializableExtra("createdItem");
+            DataItem item = (DataItem) data.getSerializableExtra("createdItem");
             createAndShowNewItem(item);
+        } else if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            DataItem item = (DataItem) data.getSerializableExtra("updatedItem");
+            updateAndShowNewItem(item);
         } else {
             Log.i(logger, "no newItem contained in result");
         }
@@ -537,6 +567,31 @@ public class OverviewActivity extends Activity {
         } catch (ExecutionException e) {
             Log.i(logger, "Network Log: execution");
 //            e.printStackTrace();
+        }
+
+        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
+            new AsyncTask<Void, Void, Boolean>() {
+
+                @Override
+                protected Boolean doInBackground(Void... params) {
+                    try{
+                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
+                        return true;
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                };
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    if(result) {
+                        // if sync has been run successfully, we update the view
+                        adapter.clear();    // view gets cleared
+                        readOutDataItemsAndPopulateView();
+                    }
+                }
+            }.execute();
         }
     }
 

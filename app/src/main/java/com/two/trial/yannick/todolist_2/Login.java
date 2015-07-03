@@ -19,6 +19,8 @@ import android.widget.FrameLayout;
 
 public class Login extends Activity {
 
+    protected static String logger = "LoginActivity";
+
     private EditText loginEmail;
     private EditText loginPassword;
             boolean validMail;
@@ -27,6 +29,7 @@ public class Login extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.layout_login);
 
         loginEmail                  = (EditText) findViewById(R.id.loginEmail);
@@ -107,6 +110,7 @@ public class Login extends Activity {
                     @Override
                     protected Void doInBackground(Void... params) {
 //                        Log.i(FrameLayout.class.getName(), "onClick(): ");
+                        Log.i(logger, "NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART NEUSTART ###########################################");
                         // TODO not with intent !?
                         startActivity(new Intent(Login.this, OverviewActivity.class));
                         return null;

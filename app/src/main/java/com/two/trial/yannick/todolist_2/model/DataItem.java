@@ -19,7 +19,7 @@ public class DataItem implements Serializable {
     private boolean done;
     private boolean favourite;
 
-    public DataItem(String name, long expiry, String description) {
+    public DataItem(String name, long expiry, String description, boolean done, boolean favourite) {
 		this.name = name;
         this.description = description;
 		this.expiry = expiry;

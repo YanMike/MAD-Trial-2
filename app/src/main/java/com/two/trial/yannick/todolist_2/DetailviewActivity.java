@@ -7,14 +7,18 @@ package com.two.trial.yannick.todolist_2;
 
     import android.app.Activity;
     import android.content.Intent;
+    import android.os.AsyncTask;
     import android.os.Bundle;
     import android.util.Log;
     import android.view.Menu;
     import android.view.View;
     import android.widget.Button;
     import android.widget.EditText;
+    import android.widget.Toast;
 
 public class DetailviewActivity extends Activity {
+
+    protected static String logger = "DetailActivity";
 
 	/*
 	 * declare attributes for the three ui elements (and later for the createAction MenuItem) - Instanzattribute
@@ -23,6 +27,7 @@ public class DetailviewActivity extends Activity {
     private EditText itemnameText;
     private EditText descriptionText;
     private Button createButton;
+    private Button deleteButton;
     private long latency;
 
 	/* an attribute that holds the latency between calling us and receiving the call (like any functionality implemented here this has only didactic purpose) */
@@ -40,8 +45,9 @@ public class DetailviewActivity extends Activity {
         itemnameText    = (EditText) findViewById(R.id.itemnameText);
         descriptionText = (EditText) findViewById(R.id.descriptionText);
         createButton    = (Button) findViewById(R.id.createButton);
+        deleteButton    = (Button) findViewById(R.id.deleteButton);
 
-		/* set the createButton as not enabled as long as no text has been input */
+		//TODO: /* set the createButton as not enabled as long as no text has been input */
 
 		/* set a listener on the itemnameText that enables the createButton on done */
 
@@ -49,31 +55,67 @@ public class DetailviewActivity extends Activity {
 		 * actionId == EditorInfo.IME_ACTION_DONE
 						|| KeyEvent.KEYCODE_ENTER == event.getKeyCode() */
 
-		/* set an onClick listener on the createButton that calls the createItem action */
-        createButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleCreateAction();
-            }
-        });
+        final Bundle paramBundle = getIntent().getExtras();
+        if(paramBundle != null) {
+            Log.i(logger, String.valueOf(paramBundle));
+
+            itemnameText.setText(paramBundle.getString("name"));
+            descriptionText.setText(paramBundle.getString("description"));
+
+            /* set an onClick listener on the createButton that calls the createItem action */
+            createButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handleCreateAction("update");
+                }
+            });
+
+            deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handleDeleteAction(paramBundle.getLong("paramItemId"));
+                }
+            });
+        } else {
+            /* set an onClick listener on the createButton that calls the createItem action */
+            createButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    handleCreateAction("create");
+                }
+            });
+        }
+
+
+
 
 		/* set the latency value as text on the latency textview */
 //        latencyLabel.setText(String.valueOf(latency));
     }
 
-    private void handleCreateAction() {
-		/* create an item, using the text from the edit text and the latency attribute */
-        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()));
+    private void handleCreateAction(String type) {
+
+        /* create an item, using the text from the edit text and the latency attribute */
+        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()), true, false);
 
 		/* create a return intent and pass the item (back to the activity) */
         Intent returnIntent = new Intent();
-         returnIntent.putExtra("createdItem", item);
+
+        if(type == "create") {
+            returnIntent.putExtra("createdItem", item);
+        } else if(type == "update") {
+            returnIntent.putExtra("updatedItem", item);
+        }
 
 		/* set the result passing RESULT_OK from Activity */
         setResult(Activity.RESULT_OK, returnIntent);
 
 		/* finish the activity */
         finish(); // die zuvor aufgerufene Activity wird wieder aufgerufen
+    }
+
+    private void handleDeleteAction(long itemId) {
+        Toast.makeText(DetailviewActivity.this, "handleDeleteAction() ", Toast.LENGTH_SHORT).show();
     }
 
     @Override

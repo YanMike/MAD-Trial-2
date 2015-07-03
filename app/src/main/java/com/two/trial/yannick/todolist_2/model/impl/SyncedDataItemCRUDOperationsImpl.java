@@ -38,6 +38,7 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
              * Case: todos are stored locally
              * Requirement: delete all remotely stored todos & copy local todos to WebApp
              */
+            //TODO: does not cover, if remote does not have any todos
             if( deleteAllRemoteDataItems() ) {
                 for(DataItem currentItem : localData) {
                     remoteCRUD.createDataItem(currentItem);
@@ -156,6 +157,11 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
             syncDone = true;
         }
         return localCRUD.readAllDataItems();
+    }
+
+    @Override
+    public DataItem readDataItem(long itemId) {
+        return localCRUD.readDataItem(itemId);
     }
 
     @Override

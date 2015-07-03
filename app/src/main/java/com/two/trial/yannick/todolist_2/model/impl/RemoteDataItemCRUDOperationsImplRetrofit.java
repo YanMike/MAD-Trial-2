@@ -37,6 +37,9 @@ public class RemoteDataItemCRUDOperationsImplRetrofit implements IDataItemCRUDOp
     }
 
     @Override
+    public DataItem readDataItem(long dataItemId) { return serverSideApi.readDataItem(dataItemId); }
+
+    @Override
     public DataItem updateDataItem(DataItem item) { return serverSideApi.updateDataItem(item); }
 
     @Override

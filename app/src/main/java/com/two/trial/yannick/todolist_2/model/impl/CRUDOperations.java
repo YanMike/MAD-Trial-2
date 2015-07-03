@@ -97,14 +97,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		 * first create the ContentValues object which will contain the column
 		 * values to be inserted
 		 */
-//        ContentValues values = new ContentValues();
-//        values.put(COL_NAME, item.getName());
-//        values.put(COL_EXPIRED, item.getExpiry());
-//        values.put(COL_DESCR, item.getDescription());
-//        values.put(COL_DONE, item.isDone() ? 1 : 0);
             ContentValues values = createContentValues(item);
-
-//        values.put(COL_FAV, item.isFavourite() ? 1 : 0);
 
 		/* insert the content values and take the id as return value */
         long id = db.insert(TABNAME, null,values);
@@ -164,19 +157,42 @@ public class CRUDOperations implements IDataItemCRUDOperations {
     }
 
 //	@Override
-//	public DataItem readDataItem(long dataItemId) {
-//		Log.i(logger, "readDataItem(): " + dataItemId);
-//
-//		/*
-//		 * query the db obtaining a cursor as return value and passing the where
-//		 * prepared statement and the id within a string array
-//		 */
-//
-//		/* check how many items we have and move to first one */
-//			/* create the item from the cursor if we have got one */
-//
+	public DataItem readDataItem(long dataItemId) {
+		Log.i(logger, "CRUDOps - readDataItem(): " + dataItemId);
+
+
+        // TODO: make query to find by ID
+        DataItem currentItem = new DataItem();
+
+        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE, COL_FAV}, null, null, null, null, COL_ID + " ASC");
+        if (cursor.moveToFirst()) {
+            do {
+                if(cursor.getLong(cursor.getColumnIndex(COL_ID)) == dataItemId) {
+                    currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
+                    currentItem.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
+                    currentItem.setExpiry(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
+                    currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
+                    currentItem.setDone(cursor.getInt(cursor.getColumnIndex(COL_DONE)) == 1 ? true : false);
+                    currentItem.setFavourite(cursor.getInt(cursor.getColumnIndex(COL_FAV)) == 1 ? true : false);
+                    return currentItem;
+                }
+
+            } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
+        } else {
+            // TODO: give feedback (low prio)
+            Log.i(logger, "no data for cursor");
+        }
+        return currentItem;
+
+		/*
+		 * query the db obtaining a cursor as return value and passing the where
+		 * prepared statement and the id within a string array
+		 */
+
+		/* check how many items we have and move to first one */
+			/* create the item from the cursor if we have got one */
 //		return null;
-//	}
+	}
 
 	public DataItem updateDataItem(DataItem item) {
 		Log.i(logger, "updateDataItem(): " + item);
@@ -189,12 +205,14 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		 * where clause and passing the id of the item as a string
 		 * we get the number of updated rows as a return value
 		 */
+
         int updated = db.update(TABNAME, values, WHERE_IDENTIFY_ITEM, new String[]{String.valueOf(item.getId())});
+		/* and return the item */
         if(updated > 0) {
+            Log.i(logger, "Updated");
             return item;
         }
-
-		/* and return the item */
+        Log.i(logger, "Not updated");
 		return null;
 	}
 
