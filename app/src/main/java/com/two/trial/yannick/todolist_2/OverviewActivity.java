@@ -23,6 +23,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,7 +92,6 @@ public class OverviewActivity extends Activity {
         itemlistView = findViewById(R.id.itemlistView);                     // Konstante, um id innerhalb eines Layouts zu finden
         addButton    = (Button) findViewById(R.id.addButton);
 
-
         this.progressDialog = new ProgressDialog(this);
 
         this.alertDialog = new AlertDialog.Builder(this);
@@ -121,7 +122,6 @@ public class OverviewActivity extends Activity {
             Log.i(logger, "Network Log: No network available");
             modelOperations = new CRUDOperations(this);
         }
-
 
         /**
          *  Listener for button "Neues Todo anlegen"
@@ -172,6 +172,29 @@ public class OverviewActivity extends Activity {
                     }
                 });
 
+                final ImageView imageFav = (ImageView) listItemView.findViewById(R.id.imageFav);
+                if(listItem.isFavourite()) {
+                    imageFav.setImageResource(R.drawable.star);
+                } else {
+                    imageFav.setImageResource(R.drawable.star_grey);
+                }
+
+                imageFav.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(listItem.isFavourite()) {
+                            imageFav.setImageResource(R.drawable.star_grey);
+                            listItem.setFavourite(false);
+                        } else {
+                            imageFav.setImageResource(R.drawable.star);
+                            listItem.setFavourite(true);
+                        }
+//                        handleUpdateTodoAction(listItem.getId());
+                        updateAndShowNewItem(listItem);
+//                        Toast.makeText(OverviewActivity.this, ""+ listItem.getId(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
                 return listItemView;
                 // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
             }
@@ -200,6 +223,8 @@ public class OverviewActivity extends Activity {
                 /* *** */
             }
         });
+
+
 
         // read out all items and populate the view
 //        readOutDataItemsAndPopulateView();
@@ -245,6 +270,9 @@ public class OverviewActivity extends Activity {
         startActivityForResult(callDetailIntent, 1);
     }
 
+    private void handleUpdateFavStatusAction(long id) {
+
+    }
 
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -263,7 +291,8 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(List<DataItem> result) {
-                itemsList.addAll(result);
+// todo: delete
+//               itemsList.addAll(result);
                 adapter.addAll(result);
             }
         }.execute();
@@ -370,17 +399,17 @@ public class OverviewActivity extends Activity {
         Log.i(logger, "suche: updateItemlistview");
         /* add the item to the adapter */
         //TODO: to read out all data from db is not the nicest solution ;) but it works
-        itemsList = modelOperations.readAllDataItems();
+        List<DataItem> allItems = modelOperations.readAllDataItems();
         adapter.clear();
-        adapter.addAll(itemsList);
+        adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-//        adapter.addAll(itemsList);
+//        List<DataItem> allItems = modelOperations.readAllDataItems();
+//        adapter.addAll(allItems);
 //        adapter.clear();
 //        adapter.notifyDataSetChanged();
     }
@@ -418,8 +447,6 @@ public class OverviewActivity extends Activity {
         if(item.getItemId() == R.id.optionAdd) {
             handleAddAction();
             return true;
-        } else if (item.getItemId() == R.id.optionTestSync) {
-            handleTestSyncAction();
         }
 
 //        else if (item.getItemId() == R.id.optionSortByDate) {
@@ -428,96 +455,7 @@ public class OverviewActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-//    private void handleTestSyncAction() {
-//        if (modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
-//            new AsyncTask<Void, Void, Boolean>() {
-//
-//                @Override
-//                protected Boolean doInBackground(Void... params) {
-//                    // if deleted successfully -> sync
-//                    if (((SyncedDataItemCRUDOperationsImpl) modelOperations).deleteAllLocalDataItems()) {
-////                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).sync();
-//                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
-//                        return true;
-//                    } else {
-//                        return false;
-//                    }
-//                }
-//
-//                ;
-//
-//                @Override
-//                protected void onPostExecute(Boolean result) {
-//                    if (result) {
-//                        // if sync has been run successfully, we update the view
-//                        adapter.clear();    // view gets cleared
-//                        readOutDataItemsAndPopulateView();
-//                    }
-//                }
-//            }.execute();
-//        }
-//    }
-
-    private void handleTestSyncAction() {
-
-
-//        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
-//            new AsyncTask<Void, Void, Boolean>() {
-//
-//                @Override
-//                protected Boolean doInBackground(Void... params) {
-//                    try{
-//                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
-//                        return true;
-//                    }catch (Exception e) {
-//                        e.printStackTrace();
-//                        return false;
-//                    }
-//                };
-//
-//                @Override
-//                protected void onPostExecute(Boolean result) {
-//                    if(result) {
-//                        // if sync has been run successfully, we update the view
-//                        adapter.clear();    // view gets cleared
-//                        readOutDataItemsAndPopulateView();
-//                    }
-//                }
-//            }.execute();
-//        }
-    }
-
-
-
-   /* @Override
-    protected void onPrepareDialog(int which, Dialog dialog, Bundle args) {
-        Log.i(this.getClass().getName(),
-                "onPrepareDoalog(): id of the dialog is: " + which + ", dialog object is: " + dialog + ", args are: " + args);
-        ((AlertDialog)dialog).setMessage("Das ist ein AlertDialog (" + args.getInt("dialogCount") + ")!");
-    }
-
-    private AlertDialog createAlertDialog(String alertMsg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(alertMsg)
-                .setPositiveButton("Ja",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                                Toast.makeText(OverviewActivity.this, "OK i guess?", Toast.LENGTH_LONG).show();
-                            }
-                        })
-                .setNegativeButton("Nein",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                                Toast.makeText(OverviewActivity.this, "Cancel i guess", Toast.LENGTH_LONG).show();
-                            }
-                        });
-        return builder.create();
-    }*/
-
+    //
     public boolean testing = false;
 
     private void isHostRechable() {
@@ -533,7 +471,8 @@ public class OverviewActivity extends Activity {
            @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");
+//                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
+                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
                     final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
                     urlc.setRequestProperty("User-Agent", "Android Application");
                     urlc.setRequestProperty("Connection", "close");
