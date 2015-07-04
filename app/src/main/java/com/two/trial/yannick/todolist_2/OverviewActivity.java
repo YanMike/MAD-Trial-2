@@ -32,6 +32,7 @@ import android.widget.Toast;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -143,14 +144,12 @@ public class OverviewActivity extends Activity {
 
                 if(existingView != null) {
                     listItemView = existingView;
+                    updateItemListView();
 //                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
-//                    Log.i(logger, "creating new view for position " + position + ": " + listItemView);
-
-                    //für fragments: getActivity().getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null); // null = Elternelement
-
+                    updateItemListView();
                 }
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
@@ -210,17 +209,6 @@ public class OverviewActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 handleUpdateTodoAction(adapter.getItem(position).getId());
-
-//                handleAddAction();
-                /* *** */
-                // siehe Vorlesung 27.05. um auch andere Layouts einzubinden (evtl. Lösung für Favourite/ un-favourite?
-                /*
-                TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_textview_simple, null);
-                textView.setText(String.valueOf(System.currentTimeMillis()));
-
-                ((ViewGroup)view).addView(textView);
-                */
-                /* *** */
             }
         });
 
@@ -270,10 +258,6 @@ public class OverviewActivity extends Activity {
         startActivityForResult(callDetailIntent, 1);
     }
 
-    private void handleUpdateFavStatusAction(long id) {
-
-    }
-
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -291,7 +275,7 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(List<DataItem> result) {
-// todo: delete
+//               todo: delete
 //               itemsList.addAll(result);
                 adapter.addAll(result);
             }
@@ -396,10 +380,30 @@ public class OverviewActivity extends Activity {
 	 * update the view
 	 */
     private void updateItemListView() {
-        Log.i(logger, "suche: updateItemlistview");
+        Log.i(logger, "updateItemListView");
         /* add the item to the adapter */
         //TODO: to read out all data from db is not the nicest solution ;) but it works
-        List<DataItem> allItems = modelOperations.readAllDataItems();
+        List<DataItem> allItems = new ArrayList<DataItem>();
+        allItems = modelOperations.readAllDataItems();
+
+        List<DataItem> doneItems  = new ArrayList<>();
+        List<DataItem> falseItems = new ArrayList<>();
+        for(DataItem item : allItems) {
+            if(item.isDone()) {
+                doneItems.add(item);
+            } else {
+                falseItems.add(item);
+            }
+//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+        }
+
+        allItems.clear();
+        for(DataItem item : doneItems) {
+            allItems.add(item);
+        }
+        for(DataItem item : falseItems) {
+            allItems.add(item);
+        }
         adapter.clear();
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
