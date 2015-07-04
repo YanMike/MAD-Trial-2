@@ -28,7 +28,7 @@ public interface RemoteDataItemCRUDApiRetrofit {
     public DataItem readDataItem(@Path("id") long dataItemId);
 
     @PUT("/todos")
-//    @Headers({"Content-Type:application/json"})
+    @Headers({"Content-Type:application/json"})
     public DataItem updateDataItem(@Body DataItem item);
 
     @DELETE("/todos/{id}")

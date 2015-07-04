@@ -7,7 +7,7 @@
     android:weightSum="1">
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/doneCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@+id/itemnameText"

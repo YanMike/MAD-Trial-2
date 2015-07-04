@@ -5,8 +5,8 @@
     android:orientation="horizontal" >
 
     <CheckBox
-        android:focusable="false"
         android:id="@+id/itemChecked"
+        android:focusable="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

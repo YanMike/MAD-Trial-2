@@ -166,8 +166,16 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     @Override
     public DataItem updateDataItem(DataItem item) {
-        localCRUD.updateDataItem(item);
-        return remoteCRUD.updateDataItem(item);
+        Log.i(logger, "LOCALCREATED: " + item.getId() + " - " + item.getName() + " - " + item.getDescription());
+
+        DataItem localCreated = localCRUD.updateDataItem(item);
+
+        Log.i(logger, "LOCALCREATED: " + localCreated);
+
+        // zweite Zuweisung eigentlich überflüssig, da nichts mehr hinzugefügt werden soll
+        DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
+
+        return remoteCreated;
     }
 
     @Override

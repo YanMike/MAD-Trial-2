@@ -61,7 +61,7 @@ public class OverviewActivity extends Activity {
     private AlertDialog.Builder alertDialog;
 
     // for ListView: declare a list of DataItem objects that will collect the items created by the user
-    private List<DataItem> dataItems = new ArrayList<DataItem>();
+    private List<DataItem> itemsList = new ArrayList<DataItem>();
 
     private IDataItemCRUDOperations modelOperations;
 
@@ -90,10 +90,12 @@ public class OverviewActivity extends Activity {
         itemlistView = findViewById(R.id.itemlistView);                     // Konstante, um id innerhalb eines Layouts zu finden
         addButton    = (Button) findViewById(R.id.addButton);
 
+
         this.progressDialog = new ProgressDialog(this);
 
         this.alertDialog = new AlertDialog.Builder(this);
 
+        //TODO: generischer umschreiben
         alertDialog.setMessage("Das ist ein AlertDialog")
                 .setTitle("Offline Mode")
                 .setPositiveButton("OK",
@@ -153,21 +155,20 @@ public class OverviewActivity extends Activity {
 
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
                 final DataItem listItem = getItem(position);
-                itemNameText.setText(listItem.getName() + " - " + listItem.getId()); // + " - " + listItem.getDescription());
+                itemNameText.setText(listItem.getName());
 
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
 
                 itemChecked.setOnCheckedChangeListener(null); // harte Methode, um beim Wiederverwenden der Ansicht nicht den alten Listener zu überschreiben
 
-
-//                itemChecked.setChecked(listItem.isDone());
+                // set checked, if COL_DONE == true
+                itemChecked.setChecked(listItem.isDone());
 
                 itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         listItem.setDone(isChecked);
                         updateAndShowNewItem(listItem);
-//                        deleteDataItemAndUpdateListView(listItem);
                     }
                 });
 
@@ -185,9 +186,7 @@ public class OverviewActivity extends Activity {
         ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 handleUpdateTodoAction(adapter.getItem(position).getId());
-
 
 //                handleAddAction();
                 /* *** */
@@ -199,8 +198,6 @@ public class OverviewActivity extends Activity {
                 ((ViewGroup)view).addView(textView);
                 */
                 /* *** */
-
-
             }
         });
 
@@ -266,25 +263,27 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(List<DataItem> result) {
+                itemsList.addAll(result);
                 adapter.addAll(result);
             }
         }.execute();
     }
 
 
-    private void deleteDataItemAndUpdateListView(final DataItem selectedItem) {
+    private void deleteDataItemAndUpdateListView(final long itemId) {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
                 // wenn löschen erfolgreich -> Methode returns true
-                return modelOperations.deleteDataItem(selectedItem.getId());
+                return modelOperations.deleteDataItem(itemId);
             }
 
             @Override
             protected void onPostExecute(Boolean result) {
                 if(result) {
                     // Um Ansicht zu aktualisieren
-                    adapter.remove(selectedItem);
+                    updateItemListView();
+                    //adapter.remove(selectedItem);
                 } else {
                     // falls löschen fehl schlägt
                     Toast.makeText(OverviewActivity.this, "DataItem could not be deleted!", Toast.LENGTH_SHORT).show();
@@ -292,28 +291,6 @@ public class OverviewActivity extends Activity {
                 }
             }
         }.execute();
-    }
-
-
-
-
-
-    private void updateAndShowNewItem(DataItem item) {
-        new AsyncTask<DataItem, Void, DataItem>() {
-
-            @Override
-            protected DataItem doInBackground(DataItem... params) {
-                modelOperations.updateDataItem(params[0]);
-                return params[0];
-            };
-
-            @Override
-            protected void onPostExecute(DataItem result) {
-                if(result != null)
-                Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_LONG).show();
-            };
-
-        }.execute(item);
     }
 
     /* implement onActivityResult(): read out result and update the listview using setText() */ // muss implementiert sein, um auf das Resultat reagieren zu können
@@ -328,15 +305,43 @@ public class OverviewActivity extends Activity {
             DataItem item = (DataItem) data.getSerializableExtra("createdItem");
             createAndShowNewItem(item);
         } else if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            DataItem item = (DataItem) data.getSerializableExtra("updatedItem");
-            updateAndShowNewItem(item);
+            if(data.getSerializableExtra("updatedItem") != null) {
+                Log.i(logger, "loeschen: requestCode1 & updatedItem");
+                DataItem item = (DataItem) data.getSerializableExtra("updatedItem");
+                updateAndShowNewItem(item);
+            } else {
+                Log.i(logger, "loeschen: requestCode1 & deletedItem");
+                long itemId = data.getLongExtra("deletedItem", 0);
+                deleteDataItemAndUpdateListView(itemId);
+            }
         } else {
             Log.i(logger, "no newItem contained in result");
         }
     }
 
-    private void createAndShowNewItem(final DataItem newItem) {
+    private void updateAndShowNewItem(DataItem item) {
+        new AsyncTask<DataItem, Void, DataItem>() {
 
+            @Override
+            protected DataItem doInBackground(DataItem... params) {
+                Log.i(logger, "update: " + String.valueOf(params[0].isDone()));
+                modelOperations.updateDataItem(params[0]);
+                return params[0];
+            };
+
+            @Override
+            protected void onPostExecute(DataItem result) {
+                if(result != null) {
+                    updateItemListView();
+                }
+
+                Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_SHORT).show();
+            };
+
+        }.execute(item);
+    }
+
+    private void createAndShowNewItem(final DataItem newItem) {
         new AsyncTask<DataItem, Void, DataItem>() {
             // Aufruf von onPreExecute erfolgt auf UI Thread
             @Override
@@ -352,28 +357,32 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(DataItem result) {
-                //adapter.addAll(result);
-                updateItemListView(result);
+                updateItemListView();
 //                progressDialog.hide();
             };
-
         }.execute(newItem);
     }
 
     /*
 	 * update the view
 	 */
-    private void updateItemListView(DataItem item) {
+    private void updateItemListView() {
+        Log.i(logger, "suche: updateItemlistview");
         /* add the item to the adapter */
-        adapter.add(item);
+        //TODO: to read out all data from db is not the nicest solution ;) but it works
+        itemsList = modelOperations.readAllDataItems();
+        adapter.clear();
+        adapter.addAll(itemsList);
+//        adapter.notifyDataSetChanged();
     }
-
-
 
     @Override
     protected void onResume() {
         super.onResume();
-//        Log.i(logger, "onResume()!");
+
+//        adapter.addAll(itemsList);
+//        adapter.clear();
+//        adapter.notifyDataSetChanged();
     }
 
     @Override

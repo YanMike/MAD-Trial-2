@@ -97,7 +97,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		 * first create the ContentValues object which will contain the column
 		 * values to be inserted
 		 */
-            ContentValues values = createContentValues(item);
+        ContentValues values = createContentValues(item);
 
 		/* insert the content values and take the id as return value */
         long id = db.insert(TABNAME, null,values);
@@ -195,10 +195,10 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 	}
 
 	public DataItem updateDataItem(DataItem item) {
-		Log.i(logger, "updateDataItem(): " + item);
 
 		/* as in create, create the content values object from the item */
         ContentValues values = createContentValues(item);
+//        values.put(COL_ID, item.getId());
 
 		/*
 		 * then update the item in the db using the prepared statement for the
@@ -206,14 +206,22 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		 * we get the number of updated rows as a return value
 		 */
 
-        int updated = db.update(TABNAME, values, WHERE_IDENTIFY_ITEM, new String[]{String.valueOf(item.getId())});
+//        int updated = db.update(TABNAME, values, WHERE_IDENTIFY_ITEM, new String[]{String.valueOf(item.getId())});
+
+        int updated = db.update(TABNAME, values, "_id " + "=" + item.getId(), null);
+
+        DataItem test = readDataItem(item.getId());
+        Log.i(logger, "updating: " + test.getId() + ", " + test.getName() + ", " + test.isDone());
+
+
 		/* and return the item */
         if(updated > 0) {
             Log.i(logger, "Updated");
             return item;
+        } else {
+            Log.i(logger, "Not updated");
+            return null;
         }
-        Log.i(logger, "Not updated");
-		return null;
 	}
 
 	@Override
