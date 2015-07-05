@@ -145,8 +145,8 @@ public class DetailviewActivity extends Activity {
         int minute  = timePicker.getCurrentMinute();
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day, hour, minute);
-
+        calendar.set(year, month, day, hour, minute, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         long expiry = calendar.getTimeInMillis();
 
         /* create an item, using the text from the edit text and the latency attribute */

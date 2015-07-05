@@ -31,6 +31,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +65,8 @@ public class OverviewActivity extends Activity {
     private AlertDialog.Builder alertDialog;
 
     // for ListView: declare a list of DataItem objects that will collect the items created by the user
-    private List<DataItem> itemsList = new ArrayList<DataItem>();
+//    private List<DataItem> itemsList = new ArrayList<DataItem>();
+    private List<DataItem> allItems = new ArrayList<DataItem>();
 
     private IDataItemCRUDOperations modelOperations;
 
@@ -143,7 +146,8 @@ public class OverviewActivity extends Activity {
 
                 if(existingView != null) {
                     listItemView = existingView;
-                    updateItemListView();
+                    Log.i(logger,"getView");
+                    updateExistingListView();
 //                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
@@ -203,7 +207,7 @@ public class OverviewActivity extends Activity {
                 TextView dateView = (TextView) listItemView.findViewById(R.id.dateView);
                 Date d = new Date(listItem.getExpiry());
                 dateView.setText(d.toString());
-                DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+//                DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
 //                dateView.setText(dateFormat.format(d));
 
                 return listItemView;
@@ -308,6 +312,7 @@ public class OverviewActivity extends Activity {
             protected void onPostExecute(Boolean result) {
                 if(result) {
                     // Um Ansicht zu aktualisieren
+                    Log.i(logger,"deleteDataItemAndUpdateListView");
                     updateItemListView();
                     //adapter.remove(selectedItem);
                 } else {
@@ -355,6 +360,7 @@ public class OverviewActivity extends Activity {
             @Override
             protected void onPostExecute(DataItem result) {
                 if(result != null) {
+                    Log.i(logger,"updateAndShowNewItem");
                     updateItemListView();
                 }
 
@@ -380,6 +386,7 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(DataItem result) {
+                Log.i(logger,"createAndShowNewItem");
                 updateItemListView();
 //                progressDialog.hide();
             };
@@ -390,11 +397,41 @@ public class OverviewActivity extends Activity {
 	 * update the view
 	 */
     private void updateItemListView() {
-        Log.i(logger, "updateItemListView");
+        Log.i(logger, "updateItemListView - itself");
         /* add the item to the adapter */
         //TODO: to read out all data from db is not the nicest solution ;) but it works
-        List<DataItem> allItems = new ArrayList<DataItem>();
         allItems = modelOperations.readAllDataItems();
+
+        List<DataItem> doneItems  = new ArrayList<>();
+        List<DataItem> falseItems = new ArrayList<>();
+        for(DataItem item : allItems) {
+//            if(item.isDone()) {
+//                doneItems.add(item);
+//            } else {
+//                falseItems.add(item);
+//            }
+            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+        }
+
+        allItems.clear();
+        adapter.clear();
+
+        for(DataItem item : falseItems) {
+            allItems.add(item);
+        }
+        for(DataItem item : doneItems) {
+            allItems.add(item);
+        }
+
+        adapter.addAll(allItems);
+//        adapter.notifyDataSetChanged();
+    }
+    private void updateExistingListView() {
+        Log.i(logger, "updateExistingListView");
+        /* add the item to the adapter */
+        //TODO: to read out all data from db is not the nicest solution ;) but it works
+//        List<DataItem> allItems = new ArrayList<DataItem>();
+//        allItems = modelOperations.readAllDataItems();
 
         List<DataItem> doneItems  = new ArrayList<>();
         List<DataItem> falseItems = new ArrayList<>();
@@ -408,15 +445,15 @@ public class OverviewActivity extends Activity {
         }
 
         allItems.clear();
-        for(DataItem item : doneItems) {
-            allItems.add(item);
-        }
+        adapter.clear();
+
         for(DataItem item : falseItems) {
             allItems.add(item);
         }
-        adapter.clear();
+        for(DataItem item : doneItems) {
+            allItems.add(item);
+        }
         adapter.addAll(allItems);
-//        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -461,13 +498,120 @@ public class OverviewActivity extends Activity {
         if(item.getItemId() == R.id.optionAdd) {
             handleAddAction();
             return true;
+        } else if (item.getItemId() == R.id.optionSortByDate) {
+            sortByDate();
+            Log.i(logger, "SortByDate: done");
+        } else if(item.getItemId() == R.id.optionSortByPrio) {
+            sortByFav();
+//            adapter.notifyDataSetChanged();
+            Log.i(logger, "SortByFav: done - " + allItems.size());
         }
-
-//        else if (item.getItemId() == R.id.optionSortByDate) {
-//            sortDoneOptionItem.setEnabled(true);
-//        }
         return super.onOptionsItemSelected(item);
     }
+
+    class BooleanComparator implements Comparator<DataItem> {
+        @Override
+        public int compare(DataItem item1, DataItem item2) {
+            String fav1 = String.valueOf(item2.isFavourite());
+            String fav2 = String.valueOf(item1.isFavourite());
+            return fav1.compareTo(fav2);
+        }
+    }
+    class DateComparator implements Comparator<DataItem> {
+        @Override
+        public int compare(DataItem item1, DataItem item2) {
+            Date date1 = new Date(item1.getExpiry());
+            Date date2 = new Date(item2.getExpiry());
+
+            if(date1.equals(date2)) {
+                if(item1.isFavourite() == true && item2.isFavourite() == true) {
+                    return date1.compareTo(date2);
+                } else if(item1.isFavourite() == true) {
+                    return -1;
+                } else if(item2.isFavourite() == true) {
+                    return 1;
+                }
+            }
+            return date1.compareTo(date2);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+    }
+
+    public void sortByDate() {
+        for(DataItem item : allItems) {
+            Date date = new Date(item.getExpiry());
+            Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
+        }
+
+        DateComparator dateComp = new DateComparator();
+        allItems = modelOperations.readAllDataItems();
+
+        List<DataItem> doneItems  = new ArrayList<>();
+        List<DataItem> falseItems = new ArrayList<>();
+
+        for(DataItem item : allItems) {
+            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+        }
+
+        if(doneItems.size()>0) {
+            Collections.sort(doneItems, dateComp);
+        }
+        if(falseItems.size()>0) {
+            Collections.sort(falseItems, dateComp);
+        }
+
+        allItems.clear();
+        for(DataItem item : doneItems) {
+            allItems.add(item);
+        }
+        for(DataItem item : falseItems) {
+            allItems.add(item);
+        }
+        Log.i(logger, "SortByDate allItems after clear: " + allItems.size());
+
+        adapter.clear();
+        adapter.addAll(allItems);
+
+    }
+    public void sortByFav() {
+        BooleanComparator boolComp = new BooleanComparator();
+        allItems = modelOperations.readAllDataItems();
+
+        List<DataItem> doneItems  = new ArrayList<>();
+        List<DataItem> falseItems = new ArrayList<>();
+        for(DataItem item : allItems) {
+//            if(item.isDone()) {
+//                doneItems.add(item);
+//            } else {
+//                falseItems.add(item);
+//            }
+            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+        }
+
+        if(doneItems.size()>0) {
+            Collections.sort(doneItems, boolComp);
+        }
+        if(falseItems.size()>0) {
+            Collections.sort(falseItems, boolComp);
+        }
+
+        allItems.clear();
+        for(DataItem item : doneItems) {
+            allItems.add(item);
+        }
+        for(DataItem item : falseItems) {
+            allItems.add(item);
+        }
+        Log.i(logger, "SortByFav allItems after clear: " + allItems.size());
+
+        adapter.clear();
+        adapter.addAll(allItems);
+    }
+
 
     //
     public boolean testing = false;
@@ -485,8 +629,8 @@ public class OverviewActivity extends Activity {
            @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-//                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
-                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
+                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
+//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
                     final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
                     urlc.setRequestProperty("User-Agent", "Android Application");
                     urlc.setRequestProperty("Connection", "close");
@@ -519,7 +663,7 @@ public class OverviewActivity extends Activity {
                 Log.i(logger, "Network Log: synced");
             } else {
                 modelOperations = new CRUDOperations(OverviewActivity.this);
-                alertDialog.setMessage("Access to web application is not possible. App will try to synchronize Todos on next restart.");
+                alertDialog.setMessage(R.string.noHost_alert);
                 alertDialog.show();
                 Log.i(logger, "Network Log: local");
             }

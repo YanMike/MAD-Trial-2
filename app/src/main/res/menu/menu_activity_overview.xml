@@ -6,27 +6,27 @@
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"
         app:showAsAction="always"
-        android:title="Neues Element"/>
+        android:title="Add new element"/>
 
     <item
-        android:id="@+id/optionSortByDone"
+        android:id="@+id/optionSortByPrio"
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"
         app:showAsAction="ifRoom"
-        android:title="Nach Erledigt sortieren"/>
+        android:title="Sort by favourites"/>
 
     <item
         android:id="@+id/optionSortByDate"
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"
         app:showAsAction="ifRoom"
-        android:title="Nach Datum sortieren"/>
+        android:title="Sort by date"/>
 
     <item
         android:id="@+id/optionTestSync"
         android:orderInCategory="100"
         android:icon="@drawable/ic_input_add"
         app:showAsAction="ifRoom"
-        android:title="Test Sync"/>
+        android:title=""/>
 
 </menu>

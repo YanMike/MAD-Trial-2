@@ -8,16 +8,16 @@
     <string name="title_activity_overview">OverviewActivity</string>
 
     <!-- labels for fields and buttons -->
-    <string name="addButton_text">Neues ToDo anlegen</string>
-    <string name="todoName_placeholder">ToDo eingeben</string>
-    <string name="createButton_text">ToDo eintragen</string>
-    <string name="deleteButton_text">ToDo löschen</string>
+    <string name="addButton_text">Create new Todo</string>
+    <string name="todoName_placeholder">Insert Todo</string>
+    <string name="createButton_text">Create new Todo</string>
+    <string name="deleteButton_text">Delete Todo</string>
 
     <string name="action_settings">Settings</string>
 
 
     <!-- (alert) dialogs -->
-    <string name="noHost_alert">Synchronisation with host not possible. All changes will stored locally only.</string>
+    <string name="noHost_alert">Access to web application is not possible. All changes are stored locally only.</string>
     <string name="ok_dialog">OK</string>
 
 </resources>

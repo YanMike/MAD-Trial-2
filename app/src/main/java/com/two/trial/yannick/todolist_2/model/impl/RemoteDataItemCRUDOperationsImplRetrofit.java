@@ -19,8 +19,8 @@ public class RemoteDataItemCRUDOperationsImplRetrofit implements IDataItemCRUDOp
     public RemoteDataItemCRUDOperationsImplRetrofit() {
 
         RestAdapter restAdapter = new RestAdapter.Builder()
-//                .setEndpoint("http://192.168.178.20:8080/TodolistWebapp/")    //@Home
-                .setEndpoint("http://192.168.178.32:8080/TodolistWebapp/")      //@KathisEltern
+                .setEndpoint("http://192.168.178.20:8080/TodolistWebapp/")    //@Home
+//                .setEndpoint("http://192.168.178.32:8080/TodolistWebapp/")      //@KathisEltern
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .build();
 
