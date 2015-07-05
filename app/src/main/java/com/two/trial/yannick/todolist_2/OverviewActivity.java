@@ -295,6 +295,7 @@ public class OverviewActivity extends Activity {
 //               todo: delete
 //               itemsList.addAll(result);
                 adapter.addAll(result);
+//                adapter.notifyDataSetChanged();
             }
         }.execute();
     }
@@ -445,7 +446,6 @@ public class OverviewActivity extends Activity {
         }
 
         allItems.clear();
-        adapter.clear();
 
         for(DataItem item : falseItems) {
             allItems.add(item);
@@ -453,7 +453,9 @@ public class OverviewActivity extends Activity {
         for(DataItem item : doneItems) {
             allItems.add(item);
         }
+        adapter.clear();
         adapter.addAll(allItems);
+//        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -503,7 +505,6 @@ public class OverviewActivity extends Activity {
             Log.i(logger, "SortByDate: done");
         } else if(item.getItemId() == R.id.optionSortByPrio) {
             sortByFav();
-//            adapter.notifyDataSetChanged();
             Log.i(logger, "SortByFav: done - " + allItems.size());
         }
         return super.onOptionsItemSelected(item);
@@ -575,7 +576,7 @@ public class OverviewActivity extends Activity {
 
         adapter.clear();
         adapter.addAll(allItems);
-
+//        adapter.notifyDataSetChanged();
     }
     public void sortByFav() {
         BooleanComparator boolComp = new BooleanComparator();
@@ -584,11 +585,11 @@ public class OverviewActivity extends Activity {
         List<DataItem> doneItems  = new ArrayList<>();
         List<DataItem> falseItems = new ArrayList<>();
         for(DataItem item : allItems) {
-//            if(item.isDone()) {
-//                doneItems.add(item);
-//            } else {
-//                falseItems.add(item);
-//            }
+            if(item.isDone()) {
+                doneItems.add(item);
+            } else {
+                falseItems.add(item);
+            }
             boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
@@ -610,6 +611,7 @@ public class OverviewActivity extends Activity {
 
         adapter.clear();
         adapter.addAll(allItems);
+//        adapter.notifyDataSetChanged();
     }
 
 
@@ -694,6 +696,7 @@ public class OverviewActivity extends Activity {
                     if(result) {
                         // if sync has been run successfully, we update the view
                         adapter.clear();    // view gets cleared
+//                        adapter.notifyDataSetChanged();
                         readOutDataItemsAndPopulateView();
                     }
                 }
