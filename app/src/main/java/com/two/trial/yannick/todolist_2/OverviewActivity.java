@@ -23,16 +23,15 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -156,13 +155,13 @@ public class OverviewActivity extends Activity {
                 final DataItem listItem = getItem(position);
                 itemNameText.setText(listItem.getName());
 
+                /*
+                 *  Done CheckBox
+                 */
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
-
                 itemChecked.setOnCheckedChangeListener(null); // harte Methode, um beim Wiederverwenden der Ansicht nicht den alten Listener zu überschreiben
-
                 // set checked, if COL_DONE == true
                 itemChecked.setChecked(listItem.isDone());
-
                 itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -171,6 +170,9 @@ public class OverviewActivity extends Activity {
                     }
                 });
 
+                /*
+                 *  Favourite ImageView
+                 */
                 final ImageView imageFav = (ImageView) listItemView.findViewById(R.id.imageFav);
                 if(listItem.isFavourite()) {
                     imageFav.setImageResource(R.drawable.star);
@@ -193,6 +195,16 @@ public class OverviewActivity extends Activity {
 //                        Toast.makeText(OverviewActivity.this, ""+ listItem.getId(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
+                /*
+                 *  Date TextView
+                 */
+                // TODO: set "german" time format & show only date
+                TextView dateView = (TextView) listItemView.findViewById(R.id.dateView);
+                Date d = new Date(listItem.getExpiry());
+                dateView.setText(d.toString());
+                DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+//                dateView.setText(dateFormat.format(d));
 
                 return listItemView;
                 // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
@@ -249,8 +261,9 @@ public class OverviewActivity extends Activity {
 
         paramBundle.putString("name", paramItem.getName());
         paramBundle.putString("description", paramItem.getDescription());
-        paramBundle.putString("done", String.valueOf(paramItem.isDone()));
-        paramBundle.putString("favourite", String.valueOf(paramItem.isFavourite()));
+        paramBundle.putLong("expiry", paramItem.getExpiry());
+        paramBundle.putBoolean("done", paramItem.isDone());
+        paramBundle.putBoolean("favourite", paramItem.isFavourite());
 
         callDetailIntent.putExtras(paramBundle);
 
@@ -319,11 +332,9 @@ public class OverviewActivity extends Activity {
             createAndShowNewItem(item);
         } else if(requestCode == 1 && resultCode == Activity.RESULT_OK) {
             if(data.getSerializableExtra("updatedItem") != null) {
-                Log.i(logger, "loeschen: requestCode1 & updatedItem");
                 DataItem item = (DataItem) data.getSerializableExtra("updatedItem");
                 updateAndShowNewItem(item);
             } else {
-                Log.i(logger, "loeschen: requestCode1 & deletedItem");
                 long itemId = data.getLongExtra("deletedItem", 0);
                 deleteDataItemAndUpdateListView(itemId);
             }
@@ -337,7 +348,6 @@ public class OverviewActivity extends Activity {
 
             @Override
             protected DataItem doInBackground(DataItem... params) {
-                Log.i(logger, "update: " + String.valueOf(params[0].isDone()));
                 modelOperations.updateDataItem(params[0]);
                 return params[0];
             };

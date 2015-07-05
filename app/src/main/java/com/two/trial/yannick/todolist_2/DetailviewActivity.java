@@ -16,8 +16,14 @@ package com.two.trial.yannick.todolist_2;
     import android.view.View;
     import android.widget.Button;
     import android.widget.CheckBox;
+    import android.widget.DatePicker;
     import android.widget.EditText;
+    import android.widget.TimePicker;
     import android.widget.Toast;
+
+    import java.util.Calendar;
+    import java.util.Date;
+    import java.util.GregorianCalendar;
 
 public class DetailviewActivity extends Activity {
 
@@ -30,6 +36,8 @@ public class DetailviewActivity extends Activity {
     private CheckBox doneCheckBox;
     private EditText itemnameText;
     private EditText descriptionText;
+    private DatePicker datePicker;
+    private TimePicker timePicker;
     private Button createButton;
     private Button deleteButton;
     private long latency;
@@ -51,6 +59,8 @@ public class DetailviewActivity extends Activity {
         doneCheckBox    = (CheckBox) findViewById(R.id.doneCheckBox);
         itemnameText    = (EditText) findViewById(R.id.itemnameText);
         descriptionText = (EditText) findViewById(R.id.descriptionText);
+        datePicker      = (DatePicker) findViewById(R.id.datePicker);
+        timePicker      = (TimePicker) findViewById(R.id.timePicker);
         createButton    = (Button) findViewById(R.id.createButton);
         deleteButton    = (Button) findViewById(R.id.deleteButton);
 
@@ -66,15 +76,30 @@ public class DetailviewActivity extends Activity {
 
         final Bundle paramBundle = getIntent().getExtras();
         if(paramBundle != null) {
+            /*
+             *  fill in existing data
+             */
+            doneCheckBox.setChecked(paramBundle.getBoolean("done"));
             itemnameText.setText(paramBundle.getString("name"));
             descriptionText.setText(paramBundle.getString("description"));
             createButton.setText("Update Item");
 
-            /* set an onClick listener on the createButton that calls the createItem action */
+            Date date = new Date(paramBundle.getLong("expiry"));
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(date);
+
+            datePicker.updateDate(cal.get(GregorianCalendar.YEAR), cal.get(GregorianCalendar.MONTH), cal.get(GregorianCalendar.DAY_OF_MONTH));
+            timePicker.setCurrentHour(cal.get(GregorianCalendar.HOUR));
+            timePicker.setCurrentMinute(cal.get(GregorianCalendar.MINUTE));
+
+            /*
+             *  set listeners
+             */
             createButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    handleCreateAction("update", paramBundle.getLong("paramItemId"));
+
+                    handleCreateAction("update", paramBundle.getLong("paramItemId"), paramBundle.getBoolean("favourite"));
                 }
             });
 
@@ -105,17 +130,28 @@ public class DetailviewActivity extends Activity {
             createButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    handleCreateAction("create", 0);
+                    handleCreateAction("create", 0, false);
                 }
             });
         }
-		/*TODO set the latency value as text on the latency textview */
-//        latencyLabel.setText(String.valueOf(latency));
     }
 
-    private void handleCreateAction(String type, long passedItemId) {
+    private void handleCreateAction(String type, long passedItemId, Boolean fav) {
+
+        int day     = datePicker.getDayOfMonth();
+        int month   = datePicker.getMonth();
+        int year    = datePicker.getYear();
+        int hour    = timePicker.getCurrentHour();
+        int minute  = timePicker.getCurrentMinute();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day, hour, minute);
+
+        long expiry = calendar.getTimeInMillis();
+
         /* create an item, using the text from the edit text and the latency attribute */
-        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), latency, String.valueOf(descriptionText.getText()), doneCheckBox.isChecked(), false);
+        DataItem item = new DataItem(String.valueOf(itemnameText.getText()), expiry, String.valueOf(descriptionText.getText()), doneCheckBox.isChecked(), fav);
+
         item.setId(passedItemId);
 
 		/* create a return intent and pass the item (back to the activity) */

@@ -126,7 +126,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		/* declare an ASC ordering for the id column */
 
 		/* query the db taking a cursor as return value */
-            // expired = representation for latency in earlier versions of dataitem
             // ASC = aufsteigende Reihenfolge
 //        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
 //        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
