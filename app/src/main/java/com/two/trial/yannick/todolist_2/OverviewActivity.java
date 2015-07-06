@@ -42,7 +42,7 @@ public class OverviewActivity extends Activity {
     protected static String logger = "OverviewActivity";
 
     public OverviewActivity() {
-//        Log.i(logger, "called: <constructor>");                 // i = info, d = debug, e = error
+//        // Log.i(logger, "called: <constructor>");                 // i = info, d = debug, e = error
     }
 
     /*
@@ -84,7 +84,7 @@ public class OverviewActivity extends Activity {
         // call onCreate as super class !! important !! for all classes of the life cycle (that android framework can work as a framework)
         super.onCreate(savedInstanceState);
 
-//        Log.i(logger, "called: onCreate()!");
+//        // Log.i(logger, "called: onCreate()!");
 
 
 
@@ -119,10 +119,10 @@ public class OverviewActivity extends Activity {
 
         // instantiate the model operations
         if(isOnline()) {
-            Log.i(logger, "Network Log: Network available");
+            // Log.i(logger, "Network Log: Network available");
             isHostRechable();
         } else {
-            Log.i(logger, "Network Log: No network available");
+            // Log.i(logger, "Network Log: No network available");
             modelOperations = new CRUDOperations(this);
         }
 
@@ -146,9 +146,9 @@ public class OverviewActivity extends Activity {
 
                 if(existingView != null) {
                     listItemView = existingView;
-                    Log.i(logger,"getView");
+                    // Log.i(logger,"getView");
                     updateExistingListView();
-//                    Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
+//                    // Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
@@ -252,7 +252,7 @@ public class OverviewActivity extends Activity {
      * @param id
      */
     private void handleUpdateTodoAction(long id) {
-        Log.i(logger, "ID: " + id);
+        // Log.i(logger, "ID: " + id);
     	/* then call the Detailview Activity */
 
     	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
@@ -313,13 +313,13 @@ public class OverviewActivity extends Activity {
             protected void onPostExecute(Boolean result) {
                 if(result) {
                     // Um Ansicht zu aktualisieren
-                    Log.i(logger,"deleteDataItemAndUpdateListView");
+                    // Log.i(logger,"deleteDataItemAndUpdateListView");
                     updateItemListView();
                     //adapter.remove(selectedItem);
                 } else {
                     // falls löschen fehl schlägt
                     Toast.makeText(OverviewActivity.this, "DataItem could not be deleted!", Toast.LENGTH_SHORT).show();
-                    Log.i(logger, "Deletion failed!");
+                    // Log.i(logger, "Deletion failed!");
                 }
             }
         }.execute();
@@ -345,7 +345,7 @@ public class OverviewActivity extends Activity {
                 deleteDataItemAndUpdateListView(itemId);
             }
         } else {
-            Log.i(logger, "no newItem contained in result");
+            // Log.i(logger, "no newItem contained in result");
         }
     }
 
@@ -361,7 +361,7 @@ public class OverviewActivity extends Activity {
             @Override
             protected void onPostExecute(DataItem result) {
                 if(result != null) {
-                    Log.i(logger,"updateAndShowNewItem");
+                    // Log.i(logger,"updateAndShowNewItem");
                     updateItemListView();
                 }
 
@@ -387,7 +387,7 @@ public class OverviewActivity extends Activity {
             // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(DataItem result) {
-                Log.i(logger,"createAndShowNewItem");
+                // Log.i(logger,"createAndShowNewItem");
                 updateItemListView();
 //                progressDialog.hide();
             };
@@ -398,7 +398,7 @@ public class OverviewActivity extends Activity {
 	 * update the view
 	 */
     private void updateItemListView() {
-        Log.i(logger, "updateItemListView - itself");
+        // Log.i(logger, "updateItemListView - itself");
         /* add the item to the adapter */
         //TODO: to read out all data from db is not the nicest solution ;) but it works
         allItems = modelOperations.readAllDataItems();
@@ -428,7 +428,7 @@ public class OverviewActivity extends Activity {
 //        adapter.notifyDataSetChanged();
     }
     private void updateExistingListView() {
-        Log.i(logger, "updateExistingListView");
+        // Log.i(logger, "updateExistingListView");
         /* add the item to the adapter */
         //TODO: to read out all data from db is not the nicest solution ;) but it works
 //        List<DataItem> allItems = new ArrayList<DataItem>();
@@ -471,7 +471,7 @@ public class OverviewActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         progressDialog.dismiss();
-//        Log.i(logger, "onDestroy()!");
+//        // Log.i(logger, "onDestroy()!");
     }
 
 //    private MenuItem sortDoneOptionItem;
@@ -502,10 +502,10 @@ public class OverviewActivity extends Activity {
             return true;
         } else if (item.getItemId() == R.id.optionSortByDate) {
             sortByDate();
-            Log.i(logger, "SortByDate: done");
+            // Log.i(logger, "SortByDate: done");
         } else if(item.getItemId() == R.id.optionSortByPrio) {
             sortByFav();
-            Log.i(logger, "SortByFav: done - " + allItems.size());
+            // Log.i(logger, "SortByFav: done - " + allItems.size());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -545,7 +545,7 @@ public class OverviewActivity extends Activity {
     public void sortByDate() {
         for(DataItem item : allItems) {
             Date date = new Date(item.getExpiry());
-            Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
+            // Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
         }
 
         DateComparator dateComp = new DateComparator();
@@ -555,7 +555,12 @@ public class OverviewActivity extends Activity {
         List<DataItem> falseItems = new ArrayList<>();
 
         for(DataItem item : allItems) {
-            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+            if(item.isDone()) {
+                doneItems.add(item);
+            } else {
+                falseItems.add(item);
+            }
+//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
         if(doneItems.size()>0) {
@@ -572,7 +577,7 @@ public class OverviewActivity extends Activity {
         for(DataItem item : falseItems) {
             allItems.add(item);
         }
-        Log.i(logger, "SortByDate allItems after clear: " + allItems.size());
+        // Log.i(logger, "SortByDate allItems after clear: " + allItems.size());
 
         adapter.clear();
         adapter.addAll(allItems);
@@ -590,7 +595,7 @@ public class OverviewActivity extends Activity {
             } else {
                 falseItems.add(item);
             }
-            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
         if(doneItems.size()>0) {
@@ -607,7 +612,7 @@ public class OverviewActivity extends Activity {
         for(DataItem item : falseItems) {
             allItems.add(item);
         }
-        Log.i(logger, "SortByFav allItems after clear: " + allItems.size());
+        // Log.i(logger, "SortByFav allItems after clear: " + allItems.size());
 
         adapter.clear();
         adapter.addAll(allItems);
@@ -640,12 +645,12 @@ public class OverviewActivity extends Activity {
                     urlc.connect();
 
                     if (urlc.getResponseCode() == 200) {
-                        Log.i(logger, "Network Log: Host reachable");
+                        // Log.i(logger, "Network Log: Host reachable");
                         testing = true;
                     }
-//                    Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
+//                    // Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
                 } catch (Throwable e) {
-                    Log.i(logger, "Network Log: Host not reachable");
+                    // Log.i(logger, "Network Log: Host not reachable");
 //                    e.printStackTrace();
                     testing = false;
                 }
@@ -659,21 +664,21 @@ public class OverviewActivity extends Activity {
         }.execute();
 
         try {
-//            Log.i(logger, "Network Log - true or false: " + String.valueOf(hostTask.get()));
+//            // Log.i(logger, "Network Log - true or false: " + String.valueOf(hostTask.get()));
             if( hostTask.get() == true) {
                 modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
-                Log.i(logger, "Network Log: synced");
+                // Log.i(logger, "Network Log: synced");
             } else {
                 modelOperations = new CRUDOperations(OverviewActivity.this);
                 alertDialog.setMessage(R.string.noHost_alert);
                 alertDialog.show();
-                Log.i(logger, "Network Log: local");
+                // Log.i(logger, "Network Log: local");
             }
         } catch (InterruptedException e) {
-            Log.i(logger, "Network Log: interrupted");
+            // Log.i(logger, "Network Log: interrupted");
 //            e.printStackTrace();
         } catch (ExecutionException e) {
-            Log.i(logger, "Network Log: execution");
+            // Log.i(logger, "Network Log: execution");
 //            e.printStackTrace();
         }
 

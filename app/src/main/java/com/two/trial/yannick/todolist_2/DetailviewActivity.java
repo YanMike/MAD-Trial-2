@@ -171,7 +171,7 @@ public class DetailviewActivity extends Activity {
     }
 
     private void handleDeleteAction(long itemId) {
-        Log.i(logger, "loeschen: handleDeleteAction");
+//        Log.i(logger, "loeschen: handleDeleteAction");
 
         Intent returnIntent = new Intent();
         returnIntent.putExtra("deletedItem", itemId);
