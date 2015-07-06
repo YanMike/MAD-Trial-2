@@ -111,7 +111,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 
     @Override
     public List<DataItem> readAllDataItems() {
-        Log.i(logger, "readAllDataItems()");
+//        Log.i(logger, "readAllDataItems()");
 		/*
 		 * declare a list of items that will keep the values read out from the
 		 * db
@@ -157,7 +157,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 
 //	@Override
 	public DataItem readDataItem(long dataItemId) {
-		Log.i(logger, "CRUDOps - readDataItem(): " + dataItemId);
+//		Log.i(logger, "CRUDOps - readDataItem(): " + dataItemId);
 
 
         // TODO: make query to find by ID

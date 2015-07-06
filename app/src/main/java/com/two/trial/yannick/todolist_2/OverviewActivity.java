@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -118,12 +117,61 @@ public class OverviewActivity extends Activity {
          */
 
         // instantiate the model operations
-        if(isOnline()) {
-            // Log.i(logger, "Network Log: Network available");
-            isHostRechable();
+//        if(isOnline()) {
+//            // Log.i(logger, "Network Log: Network available");
+//            isHostRechable();
+//        } else {
+//            // Log.i(logger, "Network Log: No network available");
+//            modelOperations = new CRUDOperations(this);
+//        }
+
+        final Bundle paramBundle = getIntent().getExtras();
+        Log.i(logger, "Login Network Log: getParamBundle");
+        boolean b = paramBundle.getBoolean("online");
+        Log.i(logger, "Login Network Log: " + b);
+        if(paramBundle != null) {
+            Log.i(logger, "Login Network Log: paramBundle !null");
+            if(paramBundle.getBoolean("online") == true ) {
+                Log.i(logger, "Login Network Log: paramBundle == true");
+                modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
+                // Log.i(logger, "Network Log: synced");
+            } else {
+                Log.i(logger, "Login Network Log: paramBundle == false");
+                modelOperations = new CRUDOperations(OverviewActivity.this);
+                alertDialog.setMessage(R.string.noHost_alert);
+                alertDialog.show();
+                // Log.i(logger, "Network Log: local");
+            }
         } else {
-            // Log.i(logger, "Network Log: No network available");
-            modelOperations = new CRUDOperations(this);
+            Log.i(logger, "Exception: " + "paramBundle empty");
+        }
+
+        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
+            new AsyncTask<Void, Void, Boolean>() {
+
+                @Override
+                protected Boolean doInBackground(Void... params) {
+                    try{
+                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
+                        return true;
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                };
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    if(result) {
+                        // if sync has been run successfully, we update the view
+                        adapter.clear();    // view gets cleared
+//                        adapter.notifyDataSetChanged();
+                        readOutDataItemsAndPopulateView();
+                    }
+                }
+            }.execute();
+        } else {
+            readOutDataItemsAndPopulateView();
         }
 
         /**
@@ -364,7 +412,6 @@ public class OverviewActivity extends Activity {
                     // Log.i(logger,"updateAndShowNewItem");
                     updateItemListView();
                 }
-
                 Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_SHORT).show();
             };
 
