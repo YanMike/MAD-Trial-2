@@ -21,15 +21,12 @@ import android.widget.EditText;
 import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 import com.two.trial.yannick.todolist_2.model.User;
 import com.two.trial.yannick.todolist_2.model.impl.CRUDOperations;
-import com.two.trial.yannick.todolist_2.model.impl.IUserApi;
 import com.two.trial.yannick.todolist_2.model.impl.SyncedDataItemCRUDOperationsImpl;
 import com.two.trial.yannick.todolist_2.model.impl.UserImpl;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
-
-import retrofit.http.Body;
 
 
 public class Login extends Activity {
@@ -56,7 +53,7 @@ public class Login extends Activity {
         this.alertDialog = new AlertDialog.Builder(this);
 
         if(isOnline()) {
-            isHostRechableForLogin();
+            isHostReachableForLogin();
 
             if(hostOnline == true) {
                 Log.i(logger, "Login Network Log: Network available");
@@ -237,7 +234,7 @@ public class Login extends Activity {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    private void isHostRechableForLogin() {
+    private void isHostReachableForLogin() {
 
         AsyncTask hostTask = new AsyncTask<Void, Void, Boolean>() {
             private ProgressDialog hostDialog = null;

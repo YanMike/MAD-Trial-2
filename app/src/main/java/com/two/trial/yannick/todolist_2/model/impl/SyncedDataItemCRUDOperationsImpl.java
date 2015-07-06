@@ -2,15 +2,19 @@ package com.two.trial.yannick.todolist_2.model.impl;
 
 import android.accounts.NetworkErrorException;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.two.trial.yannick.todolist_2.model.DataItem;
 import com.two.trial.yannick.todolist_2.model.IDataItemCRUDOperations;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations {
@@ -143,9 +147,23 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         DataItem localCreated= localCRUD.createDataItem(item);
 
         // zweite Zuweisung eigentlich überflüssig, da nichts mehr hinzugefügt werden soll
-        DataItem remoteCreated = remoteCRUD.createDataItem(localCreated);
+        try {
+            /**
+             * ONLY FOR DEBUGGING
+             */
+                isHostReachable();
+            /**
+             * END
+             */
+            DataItem remoteCreated = remoteCRUD.createDataItem(localCreated);
+            Log.i(logger, "remote -create/update: " + item.getName());
+            return remoteCreated;
+        } catch(Exception e) {
+            Log.i(logger, "-create/update: remote creation crashed");
+            e.printStackTrace();
+            return localCreated;
+        }
 
-        return remoteCreated;
     }
 
     // zugriff auf lokale db
@@ -166,12 +184,33 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     @Override
     public DataItem updateDataItem(DataItem item) {
+        /**
+         * ONLY FOR DEBUGGING
+         */
+        isHostReachable();
+        /**
+         * END
+         */
+
         DataItem localCreated = localCRUD.updateDataItem(item);
+        Log.i(logger, "local -create/update: " + item.getName());
 
         // zweite Zuweisung eigentlich überflüssig, da nichts mehr hinzugefügt werden soll
-        DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
-
-        return remoteCreated;
+        try {
+            DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
+            Log.i(logger, "remote -create/update: " + item.getName());
+            return remoteCreated;
+        } catch(Exception e) {
+            Log.i(logger, "-create/update: remote creation crashed");
+            e.printStackTrace();
+            try {
+                DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
+                Log.i(logger, "-create/update: remote creation worked 2nd time");
+            } catch(Exception f) {
+                Log.i(logger, "-create/update: remote creation crashed 2nd time");
+            }
+            return localCreated;
+        }
     }
 
     @Override
@@ -186,4 +225,39 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     }
 
 
+    private void isHostReachable() {
+        AsyncTask hostTask = new AsyncTask<Void, Void, Boolean>() {
+            private ProgressDialog hostDialog = null;
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                boolean hostOnline = false;
+                try {
+                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
+//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
+                    final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+                    urlc.setRequestProperty("User-Agent", "Android Application");
+                    urlc.setRequestProperty("Connection", "close");
+                    urlc.setConnectTimeout(10 * 1000);
+                    urlc.connect();
+
+                    if (urlc.getResponseCode() == 200) {
+                        Log.i(logger, "-create/update  Login Network Log: Host reachable");
+                        hostOnline = true;
+                    }
+//                    // Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
+                } catch (Throwable e) {
+                    Log.i(logger, "-create/update  Login Network Log: Host not reachable");
+//                    e.printStackTrace();
+                    hostOnline = false;
+                }
+                return hostOnline;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                Log.i(logger, "-create/update Host reachable: " + aBoolean);
+            }
+        }.execute();
+    }
 }

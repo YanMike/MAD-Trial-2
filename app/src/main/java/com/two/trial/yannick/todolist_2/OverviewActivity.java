@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -255,6 +256,16 @@ public class OverviewActivity extends Activity {
                 TextView dateView = (TextView) listItemView.findViewById(R.id.dateView);
                 Date d = new Date(listItem.getExpiry());
                 dateView.setText(d.toString());
+                if(listItem.getExpiry() < System.currentTimeMillis()) {
+                    dateView.setTextColor(Color.RED);
+                } else {
+                    dateView.setTextColor(Color.BLACK);
+                }
+                /*TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_listview_highlighted, null);
+                textView.setText(String.valueOf(System.currentTimeMillis()));
+
+//                ((ViewGroup)view).addView(textView);*/
+
 //                DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
 //                dateView.setText(dateFormat.format(d));
 
@@ -269,13 +280,13 @@ public class OverviewActivity extends Activity {
         adapter.setNotifyOnChange(true);
         ((ListView)itemlistView).setAdapter(adapter);
 
+
         ((ListView) itemlistView).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 handleUpdateTodoAction(adapter.getItem(position).getId());
             }
         });
-
 
 
         // read out all items and populate the view
@@ -321,12 +332,6 @@ public class OverviewActivity extends Activity {
 
     	/* actually send the intent triggering the display of the activity - use startActivityForResult */
         startActivityForResult(callDetailIntent, 1);
-    }
-
-    public boolean isOnline() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void readOutDataItemsAndPopulateView() {
@@ -413,6 +418,7 @@ public class OverviewActivity extends Activity {
                     updateItemListView();
                 }
                 Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_SHORT).show();
+                Log.i(logger, "-create/update: " + result != null ? "Successfully updated item" + result.getId() : "Update failed!");
             };
 
         }.execute(item);
@@ -501,6 +507,8 @@ public class OverviewActivity extends Activity {
             allItems.add(item);
         }
         adapter.clear();
+
+
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
@@ -590,6 +598,11 @@ public class OverviewActivity extends Activity {
     }
 
     public void sortByDate() {
+
+
+
+
+
         for(DataItem item : allItems) {
             Date date = new Date(item.getExpiry());
             // Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
