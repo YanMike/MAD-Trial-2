@@ -12,8 +12,7 @@
         android:imeOptions="actionNext"
         android:singleLine="true"
         android:inputType="textEmailAddress"
-        android:text="test@test.test"
-        /> <!-- change keyboard layout ('@' & '.' are displayed) -->
+        android:text="test@test.test" />
 
     <EditText
         android:id="@+id/loginPassword"
@@ -24,8 +23,7 @@
         android:singleLine="true"
         android:inputType="numberPassword"
         android:maxLength="6"
-        android:text="123456"
-        />
+        android:text="123456" />
 
     <Button
         android:id="@+id/loginButton"

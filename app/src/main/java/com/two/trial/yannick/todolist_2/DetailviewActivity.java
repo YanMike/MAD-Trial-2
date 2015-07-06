@@ -18,6 +18,7 @@ package com.two.trial.yannick.todolist_2;
     import android.widget.CheckBox;
     import android.widget.DatePicker;
     import android.widget.EditText;
+    import android.widget.ImageView;
     import android.widget.TimePicker;
     import android.widget.Toast;
 
@@ -36,6 +37,7 @@ public class DetailviewActivity extends Activity {
     private CheckBox doneCheckBox;
     private EditText itemnameText;
     private EditText descriptionText;
+    private ImageView imageFav;
     private DatePicker datePicker;
     private TimePicker timePicker;
     private Button createButton;
@@ -59,6 +61,7 @@ public class DetailviewActivity extends Activity {
         doneCheckBox    = (CheckBox) findViewById(R.id.doneCheckBox);
         itemnameText    = (EditText) findViewById(R.id.itemnameText);
         descriptionText = (EditText) findViewById(R.id.descriptionText);
+        imageFav        = (ImageView) findViewById(R.id.imageFav);
         datePicker      = (DatePicker) findViewById(R.id.datePicker);
         timePicker      = (TimePicker) findViewById(R.id.timePicker);
         createButton    = (Button) findViewById(R.id.createButton);
@@ -83,6 +86,12 @@ public class DetailviewActivity extends Activity {
             itemnameText.setText(paramBundle.getString("name"));
             descriptionText.setText(paramBundle.getString("description"));
             createButton.setText("Update Item");
+
+            if(paramBundle.getBoolean("favourite") == true) {
+                imageFav.setImageResource(R.drawable.star);
+            } else {
+                imageFav.setImageResource(R.drawable.star_grey);
+            }
 
             Date date = new Date(paramBundle.getLong("expiry"));
             GregorianCalendar cal = new GregorianCalendar();

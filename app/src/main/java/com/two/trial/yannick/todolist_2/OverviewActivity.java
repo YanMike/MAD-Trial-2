@@ -167,11 +167,13 @@ public class OverviewActivity extends Activity {
                         // if sync has been run successfully, we update the view
                         adapter.clear();    // view gets cleared
 //                        adapter.notifyDataSetChanged();
+                        Log.i(logger, "getsCalled 1: readOutDataItemsAndPopulateView");
                         readOutDataItemsAndPopulateView();
                     }
                 }
             }.execute();
         } else {
+            Log.i(logger, "getsCalled 2: readOutDataItemsAndPopulateView");
             readOutDataItemsAndPopulateView();
         }
 
@@ -196,11 +198,13 @@ public class OverviewActivity extends Activity {
                 if(existingView != null) {
                     listItemView = existingView;
                     // Log.i(logger,"getView");
+                    Log.i(logger, "getsCalled 3: updateExistingListView");
                     updateExistingListView();
 //                    // Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
                     // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
+                    Log.i(logger, "getsCalled 4: updateItemListView");
                     updateItemListView();
                 }
 
@@ -244,6 +248,7 @@ public class OverviewActivity extends Activity {
                             listItem.setFavourite(true);
                         }
 //                        handleUpdateTodoAction(listItem.getId());
+                        Log.i(logger, "getsCalled 5: updateAndShowNewItem(listItem)");
                         updateAndShowNewItem(listItem);
 //                        Toast.makeText(OverviewActivity.this, ""+ listItem.getId(), Toast.LENGTH_SHORT).show();
                     }
@@ -459,12 +464,11 @@ public class OverviewActivity extends Activity {
         List<DataItem> doneItems  = new ArrayList<>();
         List<DataItem> falseItems = new ArrayList<>();
         for(DataItem item : allItems) {
-//            if(item.isDone()) {
-//                doneItems.add(item);
-//            } else {
-//                falseItems.add(item);
-//            }
-            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
+            if(item.isDone()) {
+                doneItems.add(item);
+            } else {
+                falseItems.add(item);
+            }
         }
 
         allItems.clear();
@@ -495,7 +499,6 @@ public class OverviewActivity extends Activity {
             } else {
                 falseItems.add(item);
             }
-//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
         allItems.clear();
@@ -580,6 +583,13 @@ public class OverviewActivity extends Activity {
             Date date2 = new Date(item2.getExpiry());
 
             if(date1.equals(date2)) {
+//                if(item1.isFavourite() == true && item2.isFavourite() == true) {
+//                    return date1.compareTo(date2);
+//                } else if(item1.isFavourite() == true) {
+//                    return -1;
+//                } else if(item2.isFavourite() == true) {
+//                    return 1;
+//                }
                 if(item1.isFavourite() == true && item2.isFavourite() == true) {
                     return date1.compareTo(date2);
                 } else if(item1.isFavourite() == true) {
@@ -598,11 +608,6 @@ public class OverviewActivity extends Activity {
     }
 
     public void sortByDate() {
-
-
-
-
-
         for(DataItem item : allItems) {
             Date date = new Date(item.getExpiry());
             // Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
@@ -645,6 +650,59 @@ public class OverviewActivity extends Activity {
     }
     public void sortByFav() {
         BooleanComparator boolComp = new BooleanComparator();
+        DateComparator dateComp = new DateComparator();
+
+        allItems = modelOperations.readAllDataItems();
+
+        List<DataItem> doneFavItems  = new ArrayList<>();
+        List<DataItem> doneItems  = new ArrayList<>();
+        List<DataItem> falseFavItems = new ArrayList<>();
+        List<DataItem> falseItems = new ArrayList<>();
+        for(DataItem item : allItems) {
+            // done, fav
+            if(item.isDone() && item.isFavourite()) {
+                doneFavItems.add(item);
+            }
+            // done, not fav
+            else if(item.isDone()) {
+                doneItems.add(item);
+            }
+            // not done, fav
+            else if(item.isFavourite()) {
+                falseFavItems.add(item);
+            }
+            // not done, not fav
+            else {
+                falseItems.add(item);
+            }
+        }
+
+        if(falseFavItems.size()>0)
+        {
+            Collections.sort(falseFavItems, dateComp);
+        }
+        if(falseItems.size()>0) {
+            Collections.sort(falseItems, dateComp);
+        }
+        if(doneFavItems.size()>0) {
+            Collections.sort(doneFavItems, dateComp);
+        }
+        if(doneItems.size()>0) {
+            Collections.sort(doneItems, dateComp);
+        }
+
+        allItems.clear();
+        allItems.addAll(falseFavItems);
+        allItems.addAll(falseItems);
+        allItems.addAll(doneFavItems);
+        allItems.addAll(doneItems);
+
+        adapter.clear();
+        adapter.addAll(allItems);
+//        adapter.notifyDataSetChanged();
+    }
+    public void sortByFavOld() {
+        BooleanComparator boolComp = new BooleanComparator();
         allItems = modelOperations.readAllDataItems();
 
         List<DataItem> doneItems  = new ArrayList<>();
@@ -655,7 +713,6 @@ public class OverviewActivity extends Activity {
             } else {
                 falseItems.add(item);
             }
-//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
         if(doneItems.size()>0) {
