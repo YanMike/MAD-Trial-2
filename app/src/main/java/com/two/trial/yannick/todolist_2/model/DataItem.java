@@ -11,9 +11,6 @@ import java.util.Comparator;
  *  this must be made serialisable to be passed together with an intent 
  */
 public class DataItem implements Serializable {
-
-    public DataItem() {}
-
     /*
 	 * holds all information stored for an item
 	 */
@@ -23,6 +20,8 @@ public class DataItem implements Serializable {
 	private long expiry;
     private boolean done;
     private boolean favourite;
+
+    public DataItem() {}
 
     public DataItem(String name, long expiry, String description, boolean done, boolean favourite) {
 		this.name = name;

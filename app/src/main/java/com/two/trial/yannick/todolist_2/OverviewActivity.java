@@ -31,10 +31,12 @@ import android.widget.Toast;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class OverviewActivity extends Activity {
@@ -117,15 +119,6 @@ public class OverviewActivity extends Activity {
          * show the alternative solution with the android:onClick attribute
          */
 
-        // instantiate the model operations
-//        if(isOnline()) {
-//            // Log.i(logger, "Network Log: Network available");
-//            isHostRechable();
-//        } else {
-//            // Log.i(logger, "Network Log: No network available");
-//            modelOperations = new CRUDOperations(this);
-//        }
-
         final Bundle paramBundle = getIntent().getExtras();
         Log.i(logger, "Login Network Log: getParamBundle");
         boolean b = paramBundle.getBoolean("online");
@@ -197,17 +190,15 @@ public class OverviewActivity extends Activity {
 
                 if(existingView != null) {
                     listItemView = existingView;
-                    // Log.i(logger,"getView");
-                    Log.i(logger, "getsCalled 3: updateExistingListView");
                     updateExistingListView();
-//                    // Log.i(logger, "reusing existing view for position " + position + ": " + listItemView);
                 } else {
-                    // LayoutInflater => "Luftpumpe", die ein luftleeres XML Layout zu schönem Java Layout aufzublasen, mit Layout das hier erstellt wird
                     listItemView = getLayoutInflater().inflate(R.layout.layout_listview_checkbox, null);
-                    Log.i(logger, "getsCalled 4: updateItemListView");
                     updateItemListView();
                 }
 
+                /*
+                 *  Name TextView
+                 */
                 TextView itemNameText = (TextView) listItemView.findViewById(R.id.itemName);
                 final DataItem listItem = getItem(position);
                 itemNameText.setText(listItem.getName());
@@ -247,32 +238,23 @@ public class OverviewActivity extends Activity {
                             imageFav.setImageResource(R.drawable.star);
                             listItem.setFavourite(true);
                         }
-//                        handleUpdateTodoAction(listItem.getId());
-                        Log.i(logger, "getsCalled 5: updateAndShowNewItem(listItem)");
                         updateAndShowNewItem(listItem);
-//                        Toast.makeText(OverviewActivity.this, ""+ listItem.getId(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
                 /*
                  *  Date TextView
                  */
-                // TODO: set "german" time format & show only date
                 TextView dateView = (TextView) listItemView.findViewById(R.id.dateView);
                 Date d = new Date(listItem.getExpiry());
-                dateView.setText(d.toString());
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(d);
+                dateView.setText(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " " + cal.get(Calendar.DAY_OF_MONTH) + ", " + cal.get(Calendar.YEAR));
                 if(listItem.getExpiry() < System.currentTimeMillis()) {
                     dateView.setTextColor(Color.RED);
                 } else {
                     dateView.setTextColor(Color.BLACK);
                 }
-                /*TextView textView = (TextView) getLayoutInflater().inflate(R.layout.layout_listview_highlighted, null);
-                textView.setText(String.valueOf(System.currentTimeMillis()));
-
-//                ((ViewGroup)view).addView(textView);*/
-
-//                DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
-//                dateView.setText(dateFormat.format(d));
 
                 return listItemView;
                 // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
@@ -423,7 +405,6 @@ public class OverviewActivity extends Activity {
                     updateItemListView();
                 }
                 Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_SHORT).show();
-                Log.i(logger, "-create/update: " + result != null ? "Successfully updated item" + result.getId() : "Update failed!");
             };
 
         }.execute(item);
@@ -517,41 +498,11 @@ public class OverviewActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-//        List<DataItem> allItems = modelOperations.readAllDataItems();
-//        adapter.addAll(allItems);
-//        adapter.clear();
-//        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        progressDialog.dismiss();
-//        // Log.i(logger, "onDestroy()!");
-    }
-
-//    private MenuItem sortDoneOptionItem;
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_activity_overview, menu);
-
-        /*for(int i = 0; i < menu.size(); i++) {
-            MenuItem currentItem = menu.getItem(i);
-            if(currentItem.getItemId() == R.id.optionSortByDone) {
-                currentItem.setEnabled(false);
-                sortDoneOptionItem = currentItem;
-            }
-
-        }*/
-
         return true;
     }
-
-    /* implement boolean onOptionsItemSelected(MenuItem item)  */
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -560,10 +511,8 @@ public class OverviewActivity extends Activity {
             return true;
         } else if (item.getItemId() == R.id.optionSortByDate) {
             sortByDate();
-            // Log.i(logger, "SortByDate: done");
         } else if(item.getItemId() == R.id.optionSortByPrio) {
             sortByFav();
-            // Log.i(logger, "SortByFav: done - " + allItems.size());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -583,13 +532,6 @@ public class OverviewActivity extends Activity {
             Date date2 = new Date(item2.getExpiry());
 
             if(date1.equals(date2)) {
-//                if(item1.isFavourite() == true && item2.isFavourite() == true) {
-//                    return date1.compareTo(date2);
-//                } else if(item1.isFavourite() == true) {
-//                    return -1;
-//                } else if(item2.isFavourite() == true) {
-//                    return 1;
-//                }
                 if(item1.isFavourite() == true && item2.isFavourite() == true) {
                     return date1.compareTo(date2);
                 } else if(item1.isFavourite() == true) {
@@ -735,95 +677,4 @@ public class OverviewActivity extends Activity {
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
-
-
-    //
-    public boolean testing = false;
-
-    private void isHostRechable() {
-
-        AsyncTask hostTask = new AsyncTask<Void, Void, Boolean>() {
-            private ProgressDialog hostDialog = null;
-
-           @Override
-           protected void onPreExecute() {
-               hostDialog = ProgressDialog.show(OverviewActivity.this, "Bitte warten Sie...", "waehrend des Ladevorgangs.");
-           }
-
-           @Override
-            protected Boolean doInBackground(Void... params) {
-                try {
-                    URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
-//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
-                    final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                    urlc.setRequestProperty("User-Agent", "Android Application");
-                    urlc.setRequestProperty("Connection", "close");
-                    urlc.setConnectTimeout(10 * 1000);
-                    urlc.connect();
-
-                    if (urlc.getResponseCode() == 200) {
-                        // Log.i(logger, "Network Log: Host reachable");
-                        testing = true;
-                    }
-//                    // Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
-                } catch (Throwable e) {
-                    // Log.i(logger, "Network Log: Host not reachable");
-//                    e.printStackTrace();
-                    testing = false;
-                }
-                return testing;
-            }
-
-            @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                hostDialog.cancel();
-            }
-        }.execute();
-
-        try {
-//            // Log.i(logger, "Network Log - true or false: " + String.valueOf(hostTask.get()));
-            if( hostTask.get() == true) {
-                modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
-                // Log.i(logger, "Network Log: synced");
-            } else {
-                modelOperations = new CRUDOperations(OverviewActivity.this);
-                alertDialog.setMessage(R.string.noHost_alert);
-                alertDialog.show();
-                // Log.i(logger, "Network Log: local");
-            }
-        } catch (InterruptedException e) {
-            // Log.i(logger, "Network Log: interrupted");
-//            e.printStackTrace();
-        } catch (ExecutionException e) {
-            // Log.i(logger, "Network Log: execution");
-//            e.printStackTrace();
-        }
-
-        if(modelOperations instanceof SyncedDataItemCRUDOperationsImpl) {
-            new AsyncTask<Void, Void, Boolean>() {
-
-                @Override
-                protected Boolean doInBackground(Void... params) {
-                    try{
-                        ((SyncedDataItemCRUDOperationsImpl) modelOperations).exchangeTodos();
-                        return true;
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                };
-
-                @Override
-                protected void onPostExecute(Boolean result) {
-                    if(result) {
-                        // if sync has been run successfully, we update the view
-                        adapter.clear();    // view gets cleared
-//                        adapter.notifyDataSetChanged();
-                        readOutDataItemsAndPopulateView();
-                    }
-                }
-            }.execute();
-        }
-    }
-
 }

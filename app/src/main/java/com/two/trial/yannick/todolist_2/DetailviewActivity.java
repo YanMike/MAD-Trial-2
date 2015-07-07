@@ -71,12 +71,6 @@ public class DetailviewActivity extends Activity {
 
         //TODO: /* set the createButton as not enabled as long as no text has been input */
 
-		/* set a listener on the itemnameText that enables the createButton on done */
-
-		/* use this check in OnEditorActionListener:
-		 * actionId == EditorInfo.IME_ACTION_DONE
-						|| KeyEvent.KEYCODE_ENTER == event.getKeyCode() */
-
         final Bundle paramBundle = getIntent().getExtras();
         if(paramBundle != null) {
             /*
