@@ -142,7 +142,7 @@ public class Login extends Activity {
 
                             @Override
                             protected void onPreExecute() {
-                                authDialog = ProgressDialog.show(Login.this, "Bitte warten Sie...", "waehrend des Ladevorgangs.");
+                                authDialog = ProgressDialog.show(Login.this, "Please wait...", "while loading.");
                             }
 
                             @Override
@@ -196,7 +196,6 @@ public class Login extends Activity {
     }
 
     public boolean isLoginValid() {
-        boolean cancel = false;
         String mail    = loginEmail.getText().toString();
         String pwd = loginPassword.getText().toString();
 
@@ -251,7 +250,7 @@ public class Login extends Activity {
             protected Boolean doInBackground(Void... params) {
                 try {
                     URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
-//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
+//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@Eltern
                     final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
                     urlc.setRequestProperty("User-Agent", "Android Application");
                     urlc.setRequestProperty("Connection", "close");
@@ -262,10 +261,9 @@ public class Login extends Activity {
                         Log.i(logger, "Login Network Log: Host reachable");
                         hostOnline = true;
                     }
-//                    // Log.i(logger, "Network Log: Code: " + urlc.getResponseCode());
                 } catch (Throwable e) {
                     Log.i(logger, "Login Network Log: Host not reachable");
-//                    e.printStackTrace();
+                    e.printStackTrace();
                     hostOnline = false;
                 }
                 return hostOnline;

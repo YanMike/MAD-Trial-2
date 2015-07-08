@@ -31,7 +31,6 @@ public class DetailviewActivity extends Activity {
 	/*
 	 * declare attributes for the three ui elements (and later for the createAction MenuItem) - Instanzattribute
 	 */
-
     private CheckBox doneCheckBox;
     private EditText itemnameText;
     private EditText descriptionText;
@@ -40,22 +39,16 @@ public class DetailviewActivity extends Activity {
     private TimePicker timePicker;
     private Button createButton;
     private Button deleteButton;
-//    private long latency;
 
     private AlertDialog.Builder alertDialog;
 
-	/* an attribute that holds the latency between calling us and receiving the call (like any functionality implemented here this has only didactic purpose) */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("Detailview", "onCreate");
         setContentView(R.layout.layout_activity_detailview);
 
-		/* we read out the argument from the intent that contains the calltime and instantiate the latency attribute */
-//        latency = System.currentTimeMillis() - getIntent().getLongExtra("callTime", 0);
-
-		/* instantiate the three ui elements */
+		/* instantiate ui elements */
         doneCheckBox    = (CheckBox) findViewById(R.id.doneCheckBox);
         itemnameText    = (EditText) findViewById(R.id.itemnameText);
         descriptionText = (EditText) findViewById(R.id.descriptionText);
@@ -66,8 +59,6 @@ public class DetailviewActivity extends Activity {
         deleteButton    = (Button) findViewById(R.id.deleteButton);
 
         this.alertDialog = new AlertDialog.Builder(this);
-
-        //TODO: /* set the createButton as not enabled as long as no text has been input */
 
         final Bundle paramBundle = getIntent().getExtras();
         if(paramBundle != null) {
@@ -167,13 +158,11 @@ public class DetailviewActivity extends Activity {
 		/* set the result passing RESULT_OK from Activity */
         setResult(Activity.RESULT_OK, returnIntent);
 
-		/* finish the activity */
-        finish(); // die zuvor aufgerufene Activity wird wieder aufgerufen
+		/* finish the activity and go back to "caller" */
+        finish();
     }
 
     private void handleDeleteAction(long itemId) {
-//        Log.i(logger, "loeschen: handleDeleteAction");
-
         Intent returnIntent = new Intent();
         returnIntent.putExtra("deletedItem", itemId);
         setResult(Activity.RESULT_OK, returnIntent);
@@ -182,13 +171,8 @@ public class DetailviewActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.i("Detailview","onCreateOptionsMenu");
-
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_activity_detailview, menu);
-
-		/* we instantiate a create action once it is available */
-
         return true;
     }
 }

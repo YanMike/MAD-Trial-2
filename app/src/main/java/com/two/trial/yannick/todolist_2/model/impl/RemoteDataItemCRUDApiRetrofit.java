@@ -14,7 +14,6 @@ import retrofit.http.Path;
 
 
 public interface RemoteDataItemCRUDApiRetrofit {
-
     @POST("/todos")
     @Headers({"Content-Type:application/json"})
     public DataItem createDataItem(@Body DataItem item);

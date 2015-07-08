@@ -52,7 +52,7 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
                 ((Activity)context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(context, "remote deletion crashed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "An error occurred during sync.", Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -66,74 +66,19 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
             if(remoteData.size() > 0) {
                 for(DataItem currentItem : remoteData) {
                     if(remoteCRUD.deleteDataItem(currentItem.getId())) {
-                        currentItem.setId(0); // zuweisen nicht vergessen
+                        currentItem.setId(0);
                         this.createDataItem(currentItem);
                     } else {
-                        // todo: give feedback that some problem occured
                         ((Activity)context).runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(context, "sync is running", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, "An error occurred during sync.", Toast.LENGTH_LONG).show();
                             }
                         });
                     }
                 }
             }
         }
-    }
-
-
-
-    // TODO: Write my own function / find my own way
-    /*public void sync() {
-        List<DataItem> localData = localCRUD.readAllDataItems();
-        if(localData.size() > 0) {
-            // todo: remove all existing data items from server and add the local ones
-
-            for(DataItem localItem : localData) {
-                remoteCRUD.createDataItem(localItem);
-            }
-        }
-        else {
-            List<DataItem> remoteData = remoteCRUD.readAllDataItems();
-            if(remoteData.size() > 0) {
-                // todo: give feedback that sync is running
-                ((Activity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(context, "sync is running", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                for(DataItem currentItem : remoteData) {
-                    // delete item from server
-                    if(remoteCRUD.deleteDataItem(currentItem.getId())) {
-                        currentItem.setId(0); // zuweisen nicht vergessen
-                        this.createDataItem(currentItem);
-                    }
-                    else {
-                        // todo: give feedback that some problem occured
-                        ((Activity)context).runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(context, "sync is running", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }
-            }
-        }
-    }*/
-
-    public boolean deleteAllLocalDataItems() {
-        List<DataItem> localItems = localCRUD.readAllDataItems();
-        for(DataItem item : localItems) {
-            if(!localCRUD.deleteDataItem(item.getId())) {
-                // todo: give feedback that an error occured
-                return false;
-            }
-        }
-        return true;
     }
 
     public boolean deleteAllRemoteDataItems() {
@@ -142,35 +87,30 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
 
     @Override
     public DataItem createDataItem(DataItem item) {
-
-        // ID kommt mit zurück
+        // returns ID
         DataItem localCreated= localCRUD.createDataItem(item);
 
-        // zweite Zuweisung eigentlich überflüssig, da nichts mehr hinzugefügt werden soll
         try {
             /**
              * ONLY FOR DEBUGGING
              */
-                isHostReachable();
+//                isHostReachable();
             /**
              * END
              */
             DataItem remoteCreated = remoteCRUD.createDataItem(localCreated);
-            Log.i(logger, "remote -create/update: " + item.getName());
             return remoteCreated;
         } catch(Exception e) {
-            Log.i(logger, "-create/update: remote creation crashed");
             e.printStackTrace();
             return localCreated;
         }
 
     }
 
-    // zugriff auf lokale db
+    // Only local access required
     @Override
     public List<DataItem> readAllDataItems() {
         if(!syncDone) {
-//            sync();
             exchangeTodos();
             syncDone = true;
         }
@@ -182,32 +122,34 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
         return localCRUD.readDataItem(itemId);
     }
 
+    /**
+     * Contains a WORKAROUND
+     * after a while not touching the app, the app crashes during the next action. Updates are done locally only. If I restart my app and do another sync,
+     * everything is fine, therefore I did this workaround: catching exception of first try, update data and view locally and call remote action a second time.
+     *
+     * @param item
+     * @return
+     */
     @Override
     public DataItem updateDataItem(DataItem item) {
         /**
          * ONLY FOR DEBUGGING
          */
-        isHostReachable();
+//        isHostReachable();
         /**
          * END
          */
 
         DataItem localCreated = localCRUD.updateDataItem(item);
-        Log.i(logger, "local -create/update: " + item.getName());
-
-        // zweite Zuweisung eigentlich überflüssig, da nichts mehr hinzugefügt werden soll
         try {
             DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
-            Log.i(logger, "remote -create/update: " + item.getName());
             return remoteCreated;
         } catch(Exception e) {
-            Log.i(logger, "-create/update: remote creation crashed");
             e.printStackTrace();
             try {
                 DataItem remoteCreated = remoteCRUD.updateDataItem(localCreated);
-                Log.i(logger, "-create/update: remote creation worked 2nd time");
             } catch(Exception f) {
-                Log.i(logger, "-create/update: remote creation crashed 2nd time");
+                f.printStackTrace();
             }
             return localCreated;
         }
@@ -225,6 +167,9 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
     }
 
 
+    /**
+     * for debugging only
+     */
     private void isHostReachable() {
         AsyncTask hostTask = new AsyncTask<Void, Void, Boolean>() {
             private ProgressDialog hostDialog = null;
@@ -234,7 +179,7 @@ public class SyncedDataItemCRUDOperationsImpl implements IDataItemCRUDOperations
                 boolean hostOnline = false;
                 try {
                     URL url = new URL("http://192.168.178.20:8080/TodolistWebapp/");  //@Home
-//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@KathisEltern
+//                    URL url = new URL("http://192.168.178.32:8080/TodolistWebapp/");    //@Eltern
                     final HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
                     urlc.setRequestProperty("User-Agent", "Android Application");
                     urlc.setRequestProperty("Connection", "close");

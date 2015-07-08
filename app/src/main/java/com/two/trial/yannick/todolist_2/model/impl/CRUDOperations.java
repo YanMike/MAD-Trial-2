@@ -91,8 +91,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 
     @Override
     public DataItem createDataItem(DataItem item) {
-        Log.i(logger, "createDataItem(): " + item);
-
 		/*
 		 * first create the ContentValues object which will contain the column
 		 * values to be inserted
@@ -111,7 +109,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 
     @Override
     public List<DataItem> readAllDataItems() {
-//        Log.i(logger, "readAllDataItems()");
 		/*
 		 * declare a list of items that will keep the values read out from the
 		 * db
@@ -126,20 +123,17 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 		/* declare an ASC ordering for the id column */
 
 		/* query the db taking a cursor as return value */
-            // ASC = aufsteigende Reihenfolge
-//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED}, null, null, null, null, COL_ID + " ASC");
-//        Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR}, null, null, null, null, COL_ID + " ASC");
         Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE, COL_FAV}, null, null, null, null, COL_ID + " ASC");
 
 		/* use the cursor, moving to the first dataset */
-            // moveToFirst schlägt fehlt, wenn kein Inhalt da, andernfalls zeigt Cursor auf ersten Datensatz der auszugebenden Tabelle
+            // explanation: if there isn't any content, movetoFirst crashes. If there is content Cursor points to first data set of table
         if (cursor.moveToFirst()) {
-            /* iterate as long as we have reached the end */
+            /* iterate as long as we have not reached the end */
 			/* create an item from the current cursor position */
 			/* move the cursor to the next item */
             do {
                 DataItem currentItem = new DataItem();
-                // "liefere mir vom aktuellen Datensatz wo du gerade drauf bist, den Wert der Namensspalte"; erwartet eigtl index, wenn man diesen nicht kennt -> .getColumnIndex()
+                // explanation: get current data set of cursor pointer - if index unknown -> .getColumnIndex()
                 currentItem.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
                 currentItem.setExpiry(cursor.getLong(cursor.getColumnIndex(COL_EXPIRED)));
                 currentItem.setDescription(cursor.getString(cursor.getColumnIndex(COL_DESCR)));
@@ -147,7 +141,7 @@ public class CRUDOperations implements IDataItemCRUDOperations {
                 currentItem.setFavourite(cursor.getInt(cursor.getColumnIndex(COL_FAV)) == 1 ? true : false);
                 currentItem.setId(cursor.getLong(cursor.getColumnIndex(COL_ID)));
                 items.add(currentItem);
-            } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
+            } while(cursor.moveToNext());  // explanation: as long as there are more data, go ahead -> cursor.moveToNext() == true
         } else {
             Log.i(logger, "no data for cursor");
         }
@@ -155,12 +149,13 @@ public class CRUDOperations implements IDataItemCRUDOperations {
         return items;
     }
 
-//	@Override
+    /**
+     * WORKAROUND - Databases and Me aren't friends => db.query for ID didn't work ....
+     *
+     * @param dataItemId
+     * @return
+     */
 	public DataItem readDataItem(long dataItemId) {
-//		Log.i(logger, "CRUDOps - readDataItem(): " + dataItemId);
-
-
-        // TODO: make query to find by ID
         DataItem currentItem = new DataItem();
 
         Cursor cursor = db.query(TABNAME, new String[]{COL_ID, COL_NAME, COL_EXPIRED, COL_DESCR, COL_DONE, COL_FAV}, null, null, null, null, COL_ID + " ASC");
@@ -176,42 +171,23 @@ public class CRUDOperations implements IDataItemCRUDOperations {
                     return currentItem;
                 }
 
-            } while(cursor.moveToNext());  // solange weitere Daten vorhanden sind, wird cursor.moveToNext() true sein/ weiter gehen
+            } while(cursor.moveToNext());  // explanation: as long as there are more data, go ahead -> cursor.moveToNext() == true
         } else {
-            // TODO: give feedback (low prio)
             Log.i(logger, "no data for cursor");
         }
         return currentItem;
-
-		/*
-		 * query the db obtaining a cursor as return value and passing the where
-		 * prepared statement and the id within a string array
-		 */
-
-		/* check how many items we have and move to first one */
-			/* create the item from the cursor if we have got one */
-//		return null;
 	}
 
 	public DataItem updateDataItem(DataItem item) {
-
 		/* as in create, create the content values object from the item */
         ContentValues values = createContentValues(item);
-//        values.put(COL_ID, item.getId());
 
 		/*
 		 * then update the item in the db using the prepared statement for the
 		 * where clause and passing the id of the item as a string
 		 * we get the number of updated rows as a return value
 		 */
-
-//        int updated = db.update(TABNAME, values, WHERE_IDENTIFY_ITEM, new String[]{String.valueOf(item.getId())});
-
         int updated = db.update(TABNAME, values, "_id " + "=" + item.getId(), null);
-
-        DataItem test = readDataItem(item.getId());
-        Log.i(logger, "updating: " + test.getId() + ", " + test.getName() + ", " + test.isDone());
-
 
 		/* and return the item */
         if(updated > 0) {
@@ -225,8 +201,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
 
 	@Override
 	public boolean deleteDataItem(long dataItemId) {
-		Log.i(logger, "deleteDataItem(): " + dataItemId);
-
 		/*
 		 * delete the item passing the prepared where clause and the item id as
 		 * string, capture the return value indicating how many items have been
@@ -249,13 +223,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
      * @return
      */
     private ContentValues createContentValues(DataItem item) {
-
-		/* create a content values object */
-
-		/* put the name and the expired attributes from the item into the object */
-
-		/* return the object */
-
         ContentValues values = new ContentValues();
         values.put(COL_NAME, item.getName());
         values.put(COL_EXPIRED, item.getExpiry());
@@ -264,25 +231,6 @@ public class CRUDOperations implements IDataItemCRUDOperations {
         values.put(COL_FAV, item.isFavourite() ? 1 : 0);
 
         return values;
-    }
-
-    /**
-     * create an item from the cursor
-     *
-     * @param c
-     * @return
-     */
-    public DataItem createItemFromCursor(Cursor c) {
-		/* create an instance of DataItem */
-
-		/* then populate the item with the results from the cursor */
-		/*
-		 * access the fields via getColumnIndex and then use the type-specific
-		 * accessors
-		 */
-
-		/* return the item */
-        return null;
     }
 
     /**
@@ -308,11 +256,5 @@ public class CRUDOperations implements IDataItemCRUDOperations {
             Log.i(logger, "the db exists already. No need for table creation.");
         }
 
-    }
-
-    public void finalise() {
-		/* close the db to avoid trouble */
-        this.db.close();
-        Log.i(logger, "db has been closed");
     }
 }

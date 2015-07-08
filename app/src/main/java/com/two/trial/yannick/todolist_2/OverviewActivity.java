@@ -4,12 +4,8 @@ import com.two.trial.yannick.todolist_2.model.*;
 import com.two.trial.yannick.todolist_2.model.impl.*;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
@@ -28,8 +24,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -37,7 +31,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 public class OverviewActivity extends Activity {
 
@@ -47,38 +40,16 @@ public class OverviewActivity extends Activity {
 //        // Log.i(logger, "called: <constructor>");                 // i = info, d = debug, e = error
     }
 
-    /*
-     * declare instance attributes for the ui elements          // Bedienelemente erstellen, die verwendet werden sollen
-     */
-    // the textual "list view"
     private View itemlistView;
-    // the add item button
     private Button addButton;
 
-    /*
-	 * the content view
-	 */
-    private ViewGroup contentView;
-
-    /*
-     * a progress dialog
-     */
-    private ProgressDialog progressDialog;
     private AlertDialog.Builder alertDialog;
 
-    // for ListView: declare a list of DataItem objects that will collect the items created by the user
-//    private List<DataItem> itemsList = new ArrayList<DataItem>();
     private List<DataItem> allItems = new ArrayList<DataItem>();
 
     private IDataItemCRUDOperations modelOperations;
 
-    // for ListView: declare an adapter that mediates between the list of items and the listview
-    // Instanzvariable
     private ArrayAdapter<DataItem> adapter;
-
-	/*
-	 * an attribute that holds the list of items that are created by this app (optionally)
-	 */
 
 
     @Override
@@ -86,22 +57,16 @@ public class OverviewActivity extends Activity {
         // call onCreate as super class !! important !! for all classes of the life cycle (that android framework can work as a framework)
         super.onCreate(savedInstanceState);
 
-//        // Log.i(logger, "called: onCreate()!");
-
-
-
         /* set the view -> choose the layout */
         setContentView(R.layout.layout_activity_overview);
 
-        /* instantiate the ui elements */                                   // Bedienelemente auslesen, die verwendet werden sollen
-        itemlistView = findViewById(R.id.itemlistView);                     // Konstante, um id innerhalb eines Layouts zu finden
+        /* instantiate the ui elements */
+        itemlistView = findViewById(R.id.itemlistView);
         addButton    = (Button) findViewById(R.id.addButton);
-
-        this.progressDialog = new ProgressDialog(this);
 
         this.alertDialog = new AlertDialog.Builder(this);
 
-        //TODO: generischer umschreiben
+        //TO-DO: code as method
         alertDialog.setMessage("Das ist ein AlertDialog")
                 .setTitle("Offline Mode")
                 .setPositiveButton("OK",
@@ -111,30 +76,14 @@ public class OverviewActivity extends Activity {
                             }
                         });
 
-        /*
-         * set an  onClick listener on the addButton
-         *
-         * create a handleAddAction() method on this class and call it from the listener
-         *
-         * show the alternative solution with the android:onClick attribute
-         */
-
         final Bundle paramBundle = getIntent().getExtras();
-        Log.i(logger, "Login Network Log: getParamBundle");
-        boolean b = paramBundle.getBoolean("online");
-        Log.i(logger, "Login Network Log: " + b);
         if(paramBundle != null) {
-            Log.i(logger, "Login Network Log: paramBundle !null");
             if(paramBundle.getBoolean("online") == true ) {
-                Log.i(logger, "Login Network Log: paramBundle == true");
                 modelOperations = new SyncedDataItemCRUDOperationsImpl(OverviewActivity.this);
-                // Log.i(logger, "Network Log: synced");
             } else {
-                Log.i(logger, "Login Network Log: paramBundle == false");
                 modelOperations = new CRUDOperations(OverviewActivity.this);
                 alertDialog.setMessage(R.string.noHost_alert);
                 alertDialog.show();
-                // Log.i(logger, "Network Log: local");
             }
         } else {
             Log.i(logger, "Exception: " + "paramBundle empty");
@@ -160,13 +109,11 @@ public class OverviewActivity extends Activity {
                         // if sync has been run successfully, we update the view
                         adapter.clear();    // view gets cleared
 //                        adapter.notifyDataSetChanged();
-                        Log.i(logger, "getsCalled 1: readOutDataItemsAndPopulateView");
                         readOutDataItemsAndPopulateView();
                     }
                 }
             }.execute();
         } else {
-            Log.i(logger, "getsCalled 2: readOutDataItemsAndPopulateView");
             readOutDataItemsAndPopulateView();
         }
 
@@ -180,12 +127,9 @@ public class OverviewActivity extends Activity {
             }
         });
 
-        //Bearbeitung 27.05. während Vorlesung
         adapter = new ArrayAdapter<DataItem>(this, R.layout.layout_listview_checkbox, R.id.itemName) {
             @Override
             public View getView(int position, View existingView, ViewGroup parent) {
-                // existingView  = view die gerade an position ist und übergeben wird
-
                 View listItemView;
 
                 if(existingView != null) {
@@ -207,7 +151,7 @@ public class OverviewActivity extends Activity {
                  *  Done CheckBox
                  */
                 CheckBox itemChecked = (CheckBox) listItemView.findViewById(R.id.itemChecked);
-                itemChecked.setOnCheckedChangeListener(null); // harte Methode, um beim Wiederverwenden der Ansicht nicht den alten Listener zu überschreiben
+                itemChecked.setOnCheckedChangeListener(null);
                 // set checked, if COL_DONE == true
                 itemChecked.setChecked(listItem.isDone());
                 itemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -256,8 +200,8 @@ public class OverviewActivity extends Activity {
                     dateView.setTextColor(Color.BLACK);
                 }
 
+                // requires a View as return value -> list element gets identified by position (int)
                 return listItemView;
-                // erwartet einen View als return -> den wir für ein einzelnes Listenelement über int position bestimmen
             }
         };
 
@@ -274,22 +218,13 @@ public class OverviewActivity extends Activity {
                 handleUpdateTodoAction(adapter.getItem(position).getId());
             }
         });
-
-
-        // read out all items and populate the view
-//        readOutDataItemsAndPopulateView();
     }
 
     /**
      * deal with adding a new element to the list
      */
     private void handleAddAction() {
-    	/* then call the Detailview Activity */
-
-    	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
         Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
-
-    	/* actually send the intent triggering the display of the activity - use startActivityForResult */
         startActivityForResult(callDetailIntent, 0);
     }
 
@@ -298,10 +233,6 @@ public class OverviewActivity extends Activity {
      * @param id
      */
     private void handleUpdateTodoAction(long id) {
-        // Log.i(logger, "ID: " + id);
-    	/* then call the Detailview Activity */
-
-    	/* create an intent expressing what we want to DO, i.e. using the action SHOW_DETAILS */
         Intent callDetailIntent = new Intent(this, DetailviewActivity.class);
         Bundle paramBundle = new Bundle();
 
@@ -314,10 +245,8 @@ public class OverviewActivity extends Activity {
         paramBundle.putLong("expiry", paramItem.getExpiry());
         paramBundle.putBoolean("done", paramItem.isDone());
         paramBundle.putBoolean("favourite", paramItem.isFavourite());
-
         callDetailIntent.putExtras(paramBundle);
 
-    	/* actually send the intent triggering the display of the activity - use startActivityForResult */
         startActivityForResult(callDetailIntent, 1);
     }
 
@@ -329,11 +258,8 @@ public class OverviewActivity extends Activity {
                 return modelOperations.readAllDataItems();
             }
 
-            // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(List<DataItem> result) {
-//               todo: delete
-//               itemsList.addAll(result);
                 adapter.addAll(result);
 //                adapter.notifyDataSetChanged();
             }
@@ -345,21 +271,15 @@ public class OverviewActivity extends Activity {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
-                // wenn löschen erfolgreich -> Methode returns true
                 return modelOperations.deleteDataItem(itemId);
             }
 
             @Override
             protected void onPostExecute(Boolean result) {
                 if(result) {
-                    // Um Ansicht zu aktualisieren
-                    // Log.i(logger,"deleteDataItemAndUpdateListView");
                     updateItemListView();
-                    //adapter.remove(selectedItem);
                 } else {
-                    // falls löschen fehl schlägt
-                    Toast.makeText(OverviewActivity.this, "DataItem could not be deleted!", Toast.LENGTH_SHORT).show();
-                    // Log.i(logger, "Deletion failed!");
+                    Toast.makeText(OverviewActivity.this, "Error occurred: Todo could not be deleted!", Toast.LENGTH_SHORT).show();
                 }
             }
         }.execute();
@@ -371,7 +291,7 @@ public class OverviewActivity extends Activity {
         // check whether we have a result object
         /* requestCodes:
          *  0 -> create
-         *  1 -> update
+         *  1 -> update/ delete ('all' actions in detailview activity)
          */
         if(requestCode == 0 && resultCode == Activity.RESULT_OK) {
             DataItem item = (DataItem) data.getSerializableExtra("createdItem");
@@ -385,7 +305,7 @@ public class OverviewActivity extends Activity {
                 deleteDataItemAndUpdateListView(itemId);
             }
         } else {
-            // Log.i(logger, "no newItem contained in result");
+            Log.i(logger, "Unspecified Error occured during onActivityResult().");
         }
     }
 
@@ -401,7 +321,6 @@ public class OverviewActivity extends Activity {
             @Override
             protected void onPostExecute(DataItem result) {
                 if(result != null) {
-                    // Log.i(logger,"updateAndShowNewItem");
                     updateItemListView();
                 }
                 Toast.makeText(OverviewActivity.this, result != null ? "Successfully updated item" + result.getId() : "Update failed!", Toast.LENGTH_SHORT).show();
@@ -412,23 +331,13 @@ public class OverviewActivity extends Activity {
 
     private void createAndShowNewItem(final DataItem newItem) {
         new AsyncTask<DataItem, Void, DataItem>() {
-            // Aufruf von onPreExecute erfolgt auf UI Thread
-            @Override
-            protected void onPreExecute() {
-//                progressDialog.show();
-            };
-
             @Override
             protected DataItem doInBackground(DataItem... params) {
                 return modelOperations.createDataItem(params[0]);
             }
-
-            // Aufruf von onPostExecute erfolgt auf UI Thread -> Schreibzugriff gegeben
             @Override
             protected void onPostExecute(DataItem result) {
-                // Log.i(logger,"createAndShowNewItem");
                 updateItemListView();
-//                progressDialog.hide();
             };
         }.execute(newItem);
     }
@@ -437,9 +346,7 @@ public class OverviewActivity extends Activity {
 	 * update the view
 	 */
     private void updateItemListView() {
-        // Log.i(logger, "updateItemListView - itself");
-        /* add the item to the adapter */
-        //TODO: to read out all data from db is not the nicest solution ;) but it works
+        // to read out all data from db is not the nicest solution ;) but it works
         allItems = modelOperations.readAllDataItems();
 
         List<DataItem> doneItems  = new ArrayList<>();
@@ -466,11 +373,7 @@ public class OverviewActivity extends Activity {
 //        adapter.notifyDataSetChanged();
     }
     private void updateExistingListView() {
-        // Log.i(logger, "updateExistingListView");
-        /* add the item to the adapter */
-        //TODO: to read out all data from db is not the nicest solution ;) but it works
-//        List<DataItem> allItems = new ArrayList<DataItem>();
-//        allItems = modelOperations.readAllDataItems();
+        // to read out all data from db is not the nicest solution ;) but it works
 
         List<DataItem> doneItems  = new ArrayList<>();
         List<DataItem> falseItems = new ArrayList<>();
@@ -496,6 +399,12 @@ public class OverviewActivity extends Activity {
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
+
+
+    /**
+     * Options menu
+     */
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -550,11 +459,6 @@ public class OverviewActivity extends Activity {
     }
 
     public void sortByDate() {
-        for(DataItem item : allItems) {
-            Date date = new Date(item.getExpiry());
-            // Log.i(logger, "sortbydate: "+item.getName() + " | " + date);
-        }
-
         DateComparator dateComp = new DateComparator();
         allItems = modelOperations.readAllDataItems();
 
@@ -567,7 +471,6 @@ public class OverviewActivity extends Activity {
             } else {
                 falseItems.add(item);
             }
-//            boolean result = doneItems.add(item) ? item.isDone() : falseItems.add(item);
         }
 
         if(doneItems.size()>0) {
@@ -584,14 +487,12 @@ public class OverviewActivity extends Activity {
         for(DataItem item : falseItems) {
             allItems.add(item);
         }
-        // Log.i(logger, "SortByDate allItems after clear: " + allItems.size());
 
         adapter.clear();
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
     public void sortByFav() {
-        BooleanComparator boolComp = new BooleanComparator();
         DateComparator dateComp = new DateComparator();
 
         allItems = modelOperations.readAllDataItems();
@@ -601,19 +502,19 @@ public class OverviewActivity extends Activity {
         List<DataItem> falseFavItems = new ArrayList<>();
         List<DataItem> falseItems = new ArrayList<>();
         for(DataItem item : allItems) {
-            // done, fav
+            // done & fav
             if(item.isDone() && item.isFavourite()) {
                 doneFavItems.add(item);
             }
-            // done, not fav
+            // done & not fav
             else if(item.isDone()) {
                 doneItems.add(item);
             }
-            // not done, fav
+            // not done & fav
             else if(item.isFavourite()) {
                 falseFavItems.add(item);
             }
-            // not done, not fav
+            // not done & not fav
             else {
                 falseItems.add(item);
             }
@@ -643,6 +544,10 @@ public class OverviewActivity extends Activity {
         adapter.addAll(allItems);
 //        adapter.notifyDataSetChanged();
     }
+
+    /**
+     * old
+     */
     public void sortByFavOld() {
         BooleanComparator boolComp = new BooleanComparator();
         allItems = modelOperations.readAllDataItems();
@@ -671,7 +576,6 @@ public class OverviewActivity extends Activity {
         for(DataItem item : falseItems) {
             allItems.add(item);
         }
-        // Log.i(logger, "SortByFav allItems after clear: " + allItems.size());
 
         adapter.clear();
         adapter.addAll(allItems);
