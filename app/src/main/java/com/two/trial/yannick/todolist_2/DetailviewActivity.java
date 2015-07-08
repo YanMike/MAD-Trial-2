@@ -9,7 +9,6 @@ package com.two.trial.yannick.todolist_2;
     import android.app.AlertDialog;
     import android.content.DialogInterface;
     import android.content.Intent;
-    import android.os.AsyncTask;
     import android.os.Bundle;
     import android.util.Log;
     import android.view.Menu;
@@ -20,7 +19,6 @@ package com.two.trial.yannick.todolist_2;
     import android.widget.EditText;
     import android.widget.ImageView;
     import android.widget.TimePicker;
-    import android.widget.Toast;
 
     import java.util.Calendar;
     import java.util.Date;
@@ -42,7 +40,7 @@ public class DetailviewActivity extends Activity {
     private TimePicker timePicker;
     private Button createButton;
     private Button deleteButton;
-    private long latency;
+//    private long latency;
 
     private AlertDialog.Builder alertDialog;
 
@@ -55,7 +53,7 @@ public class DetailviewActivity extends Activity {
         setContentView(R.layout.layout_activity_detailview);
 
 		/* we read out the argument from the intent that contains the calltime and instantiate the latency attribute */
-        latency = System.currentTimeMillis() - getIntent().getLongExtra("callTime", 0);
+//        latency = System.currentTimeMillis() - getIntent().getLongExtra("callTime", 0);
 
 		/* instantiate the three ui elements */
         doneCheckBox    = (CheckBox) findViewById(R.id.doneCheckBox);
@@ -102,7 +100,7 @@ public class DetailviewActivity extends Activity {
                 @Override
                 public void onClick(View v) {
 
-                    handleCreateAction("update", paramBundle.getLong("paramItemId"), paramBundle.getBoolean("favourite"));
+                    handleCreateOrUpdateAction("update", paramBundle.getLong("paramItemId"), paramBundle.getBoolean("favourite"));
                 }
             });
 
@@ -133,13 +131,13 @@ public class DetailviewActivity extends Activity {
             createButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    handleCreateAction("create", 0, false);
+                    handleCreateOrUpdateAction("create", 0, false);
                 }
             });
         }
     }
 
-    private void handleCreateAction(String type, long passedItemId, Boolean fav) {
+    private void handleCreateOrUpdateAction(String type, long passedItemId, Boolean fav) {
 
         int day     = datePicker.getDayOfMonth();
         int month   = datePicker.getMonth();
@@ -193,7 +191,4 @@ public class DetailviewActivity extends Activity {
 
         return true;
     }
-
-	/* add boolean onOptionsItemSelected(MenuItem item) */
-
 }

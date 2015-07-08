@@ -1,14 +1,10 @@
 package com.two.trial.yannick.todolist_2.model.impl;
 
-import com.two.trial.yannick.todolist_2.model.IUser;
 import com.two.trial.yannick.todolist_2.model.User;
 
 import retrofit.RestAdapter;
 
-/**
- * Created by yannick on 06.07.15.
- */
-public class UserImpl implements IUser {
+public class UserImpl {
 
     private IUserApi serverSideApi;
 
@@ -22,7 +18,7 @@ public class UserImpl implements IUser {
         serverSideApi = restAdapter.create(IUserApi.class);
     }
 
-    @Override
+//    @Override
     public boolean authenticateUser(User user) {
         return serverSideApi.authenticateUser(user);
     }
